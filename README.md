@@ -25,5 +25,5 @@ https://github.com/xsslize/csgo_sdk updated this SDK first (added chams on weapo
   Viewmodel offset Roll
 
 
-![Screenshot after upd](https://imgur.com/a/BEUmtq6)
+![Screenshot after upd](https://imgur.com/a/BEUmtq6.png)
 
