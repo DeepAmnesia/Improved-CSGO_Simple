@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F3E42845-8D56-4BB3-821D-8163AB1337F0}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>csgo_sdk</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <SpectreMitigation>false</SpectreMitigation>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <TargetName>cheat</TargetName>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(DXSDK_DIR)Lib\x86</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <TargetName>cheat</TargetName>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(DXSDK_DIR)Lib\x86</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CHEATSDK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CHEATSDK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <SDLCheck>false</SDLCheck>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="functions\bhop.cpp" />
+    <ClCompile Include="functions\chams.cpp" />
+    <ClCompile Include="functions\glow.cpp" />
+    <ClCompile Include="functions\grenade_pred.cpp" />
+    <ClCompile Include="functions\misc.cpp" />
+    <ClCompile Include="functions\visuals.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="sdk\utils\input.cpp" />
+    <ClCompile Include="sdk\utils\math.cpp" />
+    <ClCompile Include="sdk\utils\utils.cpp" />
+    <ClCompile Include="sdk\utils\vfunc_hook.cpp" />
+    <ClCompile Include="hooks.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="render\menu.cpp" />
+    <ClCompile Include="configurations.cpp" />
+    <ClCompile Include="render\render.cpp" />
+    <ClCompile Include="sdk\csgostructs.cpp" />
+    <ClCompile Include="sdk\sdk.cpp" />
+    <ClCompile Include="sdk\math\Vector2D.cpp" />
+    <ClCompile Include="sdk\math\Vector4D.cpp" />
+    <ClCompile Include="sdk\math\VMatrix.cpp" />
+    <ClCompile Include="sdk\misc\characterset.cpp" />
+    <ClCompile Include="sdk\misc\checksum_crc.cpp" />
+    <ClCompile Include="sdk\misc\checksum_md5.cpp" />
+    <ClCompile Include="sdk\misc\Color.cpp" />
+    <ClCompile Include="sdk\misc\Convar.cpp" />
+    <ClCompile Include="sdk\misc\UtlBuffer.cpp" />
+    <ClCompile Include="sdk\misc\UtlString.cpp" />
+    <ClCompile Include="sdk\netvars.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="config.hpp" />
+    <ClInclude Include="fonts\cousine.hpp" />
+    <ClInclude Include="fonts\fonts.hpp" />
+    <ClInclude Include="functions\grenade_pred.hpp" />
+    <ClInclude Include="functions\misc.hpp" />
+    <ClInclude Include="functions\prediction.hpp" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="imgui\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\impl\imgui_impl_dx9.h" />
+    <ClInclude Include="imgui\impl\imgui_impl_win32.h" />
+    <ClInclude Include="imgui\imstb_rectpack.h" />
+    <ClInclude Include="imgui\imstb_textedit.h" />
+    <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="sdk\misc\datamap.hpp" />
+    <ClInclude Include="fonts\droid.hpp" />
+    <ClInclude Include="functions\bhop.hpp" />
+    <ClInclude Include="functions\chams.hpp" />
+    <ClInclude Include="functions\glow.hpp" />
+    <ClInclude Include="functions\visuals.hpp" />
+    <ClInclude Include="sdk\utils\input.hpp" />
+    <ClInclude Include="sdk\utils\math.hpp" />
+    <ClInclude Include="sdk\utils\utils.hpp" />
+    <ClInclude Include="sdk\utils\vfunc_hook.hpp" />
+    <ClInclude Include="hooks.hpp" />
+    <ClInclude Include="imgui\stb_rect_pack.h" />
+    <ClInclude Include="imgui\stb_textedit.h" />
+    <ClInclude Include="imgui\stb_truetype.h" />
+    <ClInclude Include="sdk\interfaces\IRefCounted.hpp" />
+    <ClInclude Include="render\menu.hpp" />
+    <ClInclude Include="configurations.hpp" />
+    <ClInclude Include="render\render.hpp" />
+    <ClInclude Include="sdk\utils\singleton.hpp" />
+    <ClInclude Include="sdk\csgostructs.hpp" />
+    <ClInclude Include="sdk\sdk.hpp" />
+    <ClInclude Include="sdk\interfaces\CClientState.hpp" />
+    <ClInclude Include="sdk\interfaces\CInput.hpp" />
+    <ClInclude Include="sdk\interfaces\IAppSystem.hpp" />
+    <ClInclude Include="sdk\interfaces\IBaseClientDll.hpp" />
+    <ClInclude Include="sdk\interfaces\IClientEntity.hpp" />
+    <ClInclude Include="sdk\interfaces\IClientEntityList.hpp" />
+    <ClInclude Include="sdk\interfaces\IClientMode.hpp" />
+    <ClInclude Include="sdk\interfaces\IClientNetworkable.hpp" />
+    <ClInclude Include="sdk\interfaces\IClientRenderable.hpp" />
+    <ClInclude Include="sdk\interfaces\IClientThinkable.hpp" />
+    <ClInclude Include="sdk\interfaces\IClientUnknown.hpp" />
+    <ClInclude Include="sdk\interfaces\ICollideable.hpp" />
+    <ClInclude Include="sdk\interfaces\IConVar.hpp" />
+    <ClInclude Include="sdk\interfaces\ICvar.hpp" />
+    <ClInclude Include="sdk\interfaces\IEngineSound.hpp" />
+    <ClInclude Include="sdk\interfaces\IEngineTrace.hpp" />
+    <ClInclude Include="sdk\interfaces\IGameEventmanager.hpp" />
+    <ClInclude Include="sdk\interfaces\IMaterialSystem.hpp" />
+    <ClInclude Include="sdk\interfaces\IMDLCache.hpp" />
+    <ClInclude Include="sdk\interfaces\IMoveHelper.hpp" />
+    <ClInclude Include="sdk\interfaces\IPanel.hpp" />
+    <ClInclude Include="sdk\interfaces\IPhysics.hpp" />
+    <ClInclude Include="sdk\interfaces\IPrediction.hpp" />
+    <ClInclude Include="sdk\interfaces\IRenderView.hpp" />
+    <ClInclude Include="sdk\interfaces\ISurface.hpp" />
+    <ClInclude Include="sdk\interfaces\IVDebugOverlay.hpp" />
+    <ClInclude Include="sdk\interfaces\IVEngineClient.hpp" />
+    <ClInclude Include="sdk\interfaces\IViewRender.hpp" />
+    <ClInclude Include="sdk\interfaces\IVModelInfoClient.hpp" />
+    <ClInclude Include="sdk\interfaces\IVModelRender.hpp" />
+    <ClInclude Include="sdk\math\QAngle.hpp" />
+    <ClInclude Include="sdk\math\Vector.hpp" />
+    <ClInclude Include="sdk\math\Vector2D.hpp" />
+    <ClInclude Include="sdk\math\Vector4D.hpp" />
+    <ClInclude Include="sdk\math\VMatrix.hpp" />
+    <ClInclude Include="sdk\misc\BaseHandle.hpp" />
+    <ClInclude Include="sdk\misc\characterset.hpp" />
+    <ClInclude Include="sdk\misc\checksum_crc.hpp" />
+    <ClInclude Include="sdk\misc\checksum_md5.hpp" />
+    <ClInclude Include="sdk\misc\ClientClass.hpp" />
+    <ClInclude Include="sdk\misc\Color.hpp" />
+    <ClInclude Include="sdk\misc\Convar.hpp" />
+    <ClInclude Include="sdk\misc\CUserCmd.hpp" />
+    <ClInclude Include="sdk\misc\EHandle.hpp" />
+    <ClInclude Include="sdk\misc\Enums.hpp" />
+    <ClInclude Include="sdk\misc\GlobalVars.hpp" />
+    <ClInclude Include="sdk\misc\glow_outline_effect.hpp" />
+    <ClInclude Include="sdk\misc\IHandleEntity.hpp" />
+    <ClInclude Include="sdk\misc\platform.hpp" />
+    <ClInclude Include="sdk\misc\Recv.hpp" />
+    <ClInclude Include="sdk\misc\Studio.hpp" />
+    <ClInclude Include="sdk\misc\UtlBuffer.hpp" />
+    <ClInclude Include="sdk\misc\UtlMemory.hpp" />
+    <ClInclude Include="sdk\misc\UtlString.hpp" />
+    <ClInclude Include="sdk\misc\UtlVector.hpp" />
+    <ClInclude Include="sdk\misc\vfunc.hpp" />
+    <ClInclude Include="sdk\netvars.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
