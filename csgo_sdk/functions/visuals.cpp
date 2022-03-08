@@ -6,7 +6,7 @@
 #include "../configurations.hpp"
 #include "../sdk/utils/math.hpp"
 #include "../sdk/utils/utils.hpp"
-
+#include "../functions/damage_indicator.h"
 #include "../imgui/imgui.h"
 
 RECT GetBBox(C_BaseEntity* ent)
@@ -189,17 +189,6 @@ void Visuals::Player::RenderSnapline()
 		ctx.feet_pos.x, ctx.feet_pos.y, ctx.clr);
 }
 
-void Visuals::RenderCrosshair()
-{
-	int w, h;
-
-	g_EngineClient->GetScreenSize(w, h);
-
-	int cx = w / 2;
-	int cy = h / 2;
-	Render::Get().RenderLine(cx - 25, cy, cx + 25, cy, g_Configurations.color_esp_crosshair);
-	Render::Get().RenderLine(cx, cy - 25, cx, cy + 25, g_Configurations.color_esp_crosshair);
-}
 
 void Visuals::RenderWeapon(C_BaseCombatWeapon* ent)
 {
@@ -425,6 +414,6 @@ void Visuals::AddToDrawList()
 			RenderItemEsp(entity);
 	}
 
-	if (g_Configurations.esp_crosshair)
-		RenderCrosshair();
+	
+		damage_indicators.paint();
 }

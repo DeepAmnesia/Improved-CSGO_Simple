@@ -35,8 +35,8 @@ public:
 		void RenderHealth();
 		void RenderArmour();
 		void RenderSnapline();
+		void OutOfScreenArrow();
 	};
-	void RenderCrosshair();
 	void RenderWeapon(C_BaseCombatWeapon* ent);
 	void RenderDefuseKit(C_BaseEntity* ent);
 	void RenderPlantedC4(C_BaseEntity* ent);

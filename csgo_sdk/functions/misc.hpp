@@ -13,4 +13,5 @@ class Misc : public Singleton<Misc>
 {
 public:
 	void AutoStrafe(CUserCmd* cmd);
+	void QuickReload(CUserCmd* cmd);
 };

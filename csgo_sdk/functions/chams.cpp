@@ -67,7 +67,8 @@ void Chams::OnDrawModelExecute(IMatRenderContext* ctx, const DrawModelState_t& s
 	{
 		"particle/vistasmokev1/vistasmokev1_emods",
 		"particle/vistasmokev1/vistasmokev1_emods_impactdust",
-		"particle/vistasmokev1/vistasmokev1_smokegrenade"
+		"particle/vistasmokev1/vistasmokev1_smokegrenade",
+		"particle/vistasmokev1/vistasmokev1_fire"
 	/*	"effects/overlaysmoke",
 		"particle/beam_smoke_01",
 		"particle/particle_smokegrenade",

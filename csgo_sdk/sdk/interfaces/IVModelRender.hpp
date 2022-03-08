@@ -128,6 +128,44 @@ struct StaticLightingQuery_t : public LightingQuery_t
 {
     IClientRenderable*        m_pRenderable;
 };
+#define member_func_args(...) (this, __VA_ARGS__ ); }
+#define vfunc(index, func, sig) auto func { return reinterpret_cast<sig>((*(uint32_t**)this)[index]) member_func_args
+
+struct viewmatrix
+{
+    float matrix[4][4];
+
+    __forceinline float* operator[](const int i)
+    {
+        return matrix[i];
+    }
+
+    __forceinline const float* operator[](const int i) const
+    {
+        return matrix[i];
+    }
+};
+class c_material_var
+{
+public:
+    vfunc(10, set_vector_internal(const float x, const float y), void(__thiscall*)(void*, float, float))(x, y)
+        vfunc(11, set_vector_internal(const float x, const float y, const float z), void(__thiscall*)(void*, float, float, float))(x, y, z)
+        vfunc(4, set_float(const float val), void(__thiscall*)(void*, float))(val)
+        vfunc(5, set_int(const int val), void(__thiscall*)(void*, int))(val)
+        vfunc(6, set_string(char const* val), void(__thiscall*)(void*, char const*))(val)
+        vfunc(20, set_matrix(viewmatrix& matrix), void(__thiscall*)(void*, viewmatrix&))(matrix)
+        vfunc(26, set_vector_component(const float val, const int comp), void(__thiscall*)(void*, float, int))(val, comp)
+
+        void set_vector(const Vector2D vector)
+    {
+        set_vector_internal(vector.x, vector.y);
+    }
+
+    void set_vector(const Vector vector)
+    {
+        set_vector_internal(vector.x, vector.y, vector.z);
+    }
+};
 
 class IMaterial
 {
@@ -191,6 +229,22 @@ public:
     virtual bool                    WasReloadedFromWhitelist() = 0;
     virtual bool                    SetTempExcluded(bool bSet, int nExcludedDimensionLimit) = 0;
     virtual int                     GetReferenceCount() const = 0;
+    vfunc(11, find_var_internal(const char* name, bool* found), c_material_var* (__thiscall*)(IMaterial*, const char*, bool*, bool))(name, found, false)
+        vfunc(12, incrementreferencecount(), void(__thiscall*)(IMaterial*))();
+    vfunc(0, get_name(), const char* (__thiscall*)(IMaterial*))()
+        vfunc(29, set_material_var_flag(const MaterialVarFlags_t flag, const bool on), void(__thiscall*)(IMaterial*, MaterialVarFlags_t, bool))(flag, on)
+        vfunc(37, refresh(), void(__thiscall*)(IMaterial*))()
+
+        c_material_var* find_var(const char* name)
+    {
+        bool found;
+        const auto ret = find_var_internal(name, &found);
+
+        if (found)
+            return ret;
+
+        return nullptr;
+    }
 };
 
 class IVModelRender

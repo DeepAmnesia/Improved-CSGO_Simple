@@ -174,6 +174,7 @@ public:
 	NETVAR(float_t, m_flNextSecondaryAttack, "DT_BaseCombatWeapon", "m_flNextSecondaryAttack");
 	NETVAR(int32_t, m_iClip1, "DT_BaseCombatWeapon", "m_iClip1");
 	NETVAR(int32_t, m_iClip2, "DT_BaseCombatWeapon", "m_iClip2");
+	NETVAR(int, weapon, "CBaseViewModel", "m_hWeapon");
 	NETVAR(float_t, m_flRecoilIndex, "DT_WeaponCSBase", "m_flRecoilIndex");
 	NETVAR(int32_t, m_iViewModelIndex, "DT_BaseCombatWeapon", "m_iViewModelIndex");
 	NETVAR(int32_t, m_iWorldModelIndex, "DT_BaseCombatWeapon", "m_iWorldModelIndex");
@@ -201,6 +202,8 @@ public:
 	CUtlVector<IRefCounted*>& m_CustomMaterials();
 	bool* m_bCustomMaterialInitialized();
 	std::string get_name();
+	int SubWeaponType();
+	
 };
 
 class C_BasePlayer : public C_BaseEntity
@@ -258,7 +261,12 @@ public:
 	}
 
 
-	PNETVAR(CHandle<C_BaseCombatWeapon>, m_hMyWeapons, "DT_BaseCombatCharacter", "m_hMyWeapons");
+	//PNETVAR(CHandle<C_BaseCombatWeapon>, m_hMyWeapons, "DT_BaseCombatCharacter", "m_hMyWeapons");
+	CBaseHandle* m_hMyWeapons()
+	{
+		return (CBaseHandle*)((uintptr_t)this + 0x2E08);
+	}
+
 	PNETVAR(CHandle<C_BaseAttributableItem>, m_hMyWearables, "DT_BaseCombatCharacter", "m_hMyWearables");
 	PNETVAR(char, m_szLastPlaceName, "DT_BasePlayer", "m_szLastPlaceName");
 

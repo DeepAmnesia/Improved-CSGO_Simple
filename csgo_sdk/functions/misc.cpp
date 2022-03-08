@@ -128,3 +128,49 @@ void Misc::AutoStrafe(CUserCmd* cmd)
 
 	cmd->sidemove = sin(yaw) * speed;
 }
+
+void Misc::QuickReload(CUserCmd* cmd)
+{
+	if (!g_Configurations.quick_reload)
+		return;
+	static C_BaseCombatWeapon* ReloadedWeapon{ nullptr };
+	auto Weapons = g_LocalPlayer->m_hMyWeapons();
+
+	if (ReloadedWeapon)
+	{
+		for (auto i = 0; Weapons[i].IsValid(); i++)
+		{
+			if (Weapons[i] == -1)
+				break;
+
+			if ((C_BaseCombatWeapon*)g_EntityList->GetClientEntityFromHandle(Weapons[i]) == ReloadedWeapon)
+			{
+				cmd->weaponselect = ReloadedWeapon->EntIndex();
+				cmd->weaponsubtype = ReloadedWeapon->SubWeaponType();
+				break;
+			}
+		}
+		ReloadedWeapon = nullptr;
+	}
+
+	if (auto ActiveWeapon{ g_LocalPlayer->m_hActiveWeapon() }; ActiveWeapon && ActiveWeapon->IsReloading() && ActiveWeapon->m_iClip1() == ActiveWeapon->GetCSWeaponData()->iMaxClip1)
+	{
+		ReloadedWeapon = ActiveWeapon;
+
+		for (auto i = 0; Weapons[i].IsValid(); i++)
+		{
+			if (Weapons[i] == -1)
+				break;
+
+			if (auto Weapon{ (C_BaseCombatWeapon*)g_EntityList->GetClientEntityFromHandle(Weapons[i]) }; Weapon && Weapon != ReloadedWeapon)
+			{
+				if (!Weapon)
+					continue;
+
+				cmd->weaponselect = Weapon->EntIndex();
+				cmd->weaponsubtype = Weapon->SubWeaponType();
+				break;
+			}
+		}
+	}
+}

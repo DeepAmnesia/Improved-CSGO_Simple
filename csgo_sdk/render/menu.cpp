@@ -110,13 +110,16 @@ void RenderEspTab()
 
         ImGui::NextColumn();
 
-        ImGui::Checkbox("Crosshair", g_Configurations.esp_crosshair);
+
         ImGui::Checkbox("Dropped Weapons", g_Configurations.esp_dropped_weapons);
         ImGui::Checkbox("Defuse Kit", g_Configurations.esp_defuse_kit);
         ImGui::Checkbox("Planted C4", g_Configurations.esp_planted_c4);
         ImGui::Checkbox("Item Esp", g_Configurations.esp_items);
         ImGui::Checkbox("Grenade prediction", g_Configurations.esp_grenade_prediction);
-
+        ImGui::Checkbox("Damage indicator", g_Configurations.damage_indicator);
+        ImGui::Combo("Hit marker", g_Configurations.hit_marker, "Disabled\0World\0Crosshair");
+        ImGui::Combo("Enemy bullet tracers", g_Configurations.enemy_bullet_tracers, "Disabled\0Line\0Beam");
+        ImGui::Combo("Local bullet tracers", g_Configurations.local_bullet_tracers, "Disabled\0Beam\0Line");
         ImGui::NextColumn();
 
         ImGui::PushItemWidth(100);
@@ -124,12 +127,12 @@ void RenderEspTab()
         ImGuiEx::ColorEdit3("Enemies Visible", g_Configurations.color_esp_enemy_visible);
         ImGuiEx::ColorEdit3("Allies Occluded", g_Configurations.color_esp_ally_occluded);
         ImGuiEx::ColorEdit3("Enemies Occluded", g_Configurations.color_esp_enemy_occluded);
-        ImGuiEx::ColorEdit3("Crosshair", g_Configurations.color_esp_crosshair);
         ImGuiEx::ColorEdit3("Dropped Weapons", g_Configurations.color_esp_weapons);
         ImGuiEx::ColorEdit3("Defuse Kit", g_Configurations.color_esp_defuse);
         ImGuiEx::ColorEdit3("Planted C4", g_Configurations.color_esp_c4);
         ImGuiEx::ColorEdit3("Item Esp", g_Configurations.color_esp_item);
         ImGuiEx::ColorEdit3("Grenade prediction", g_Configurations.color_grenade_prediction);
+
         ImGui::PopItemWidth();
 
         ImGui::Columns(1, nullptr, false);
@@ -271,7 +274,7 @@ void RenderMiscTab()
           
         ImGui::Checkbox("Remove visual recoil", g_Configurations.remove_visualrecoil);
         ImGui::Checkbox("Remove post processing", g_Configurations.remove_post_processing);
-        ImGui::Checkbox("Remove Panorama blur", g_Configurations.remove_panorama_blur);
+        ImGui::Checkbox("Remove panorama blur", g_Configurations.remove_panorama_blur);
         ImGui::Checkbox("Aspect ratio", g_Configurations.aspect_ratio);
         if (g_Configurations.aspect_ratio)
             ImGui::SliderFloat("Scale", g_Configurations.aspect_ratio_scale, 0.1f, 4.f);
@@ -285,7 +288,7 @@ void RenderMiscTab()
         ImGui::SliderFloat("Viewmodel offset Roll", g_Configurations.viewmodel_offset_roll, -30.f, 30.f);
         ImGui::Checkbox("No scope crosshair", g_Configurations.no_scope_crosshair);
         ImGui::SliderFloat("Camera Fov", g_Configurations.camera_fov, 68.f, 120.f);
-        ImGui::Checkbox("Force fov in scoper", g_Configurations.force_fov_in_zoom);
+        ImGui::Checkbox("Force fov in scope", g_Configurations.force_fov_in_zoom);
 		ImGui::Checkbox("Rank reveal", g_Configurations.misc_showranks);
 		ImGui::Checkbox("Watermark##hc", g_Configurations.misc_watermark);
 
@@ -296,7 +299,10 @@ void RenderMiscTab()
         ImGui::SliderFloat("Red", g_Configurations.mat_ambient_light_r, 0, 1);
         ImGui::SliderFloat("Green", g_Configurations.mat_ambient_light_g, 0, 1);
         ImGui::SliderFloat("Blue", g_Configurations.mat_ambient_light_b, 0, 1);
-
+        ImGui::Checkbox("Preserve Killfeed", g_Configurations.preserve_killfeed);
+        ImGui::Checkbox("Quick reload", g_Configurations.quick_reload);
+        ImGui::Checkbox("Hit sound", g_Configurations.hitsound);
+       
         ImGui::Columns(1, nullptr, false);
     }
     ImGui::EndGroup();
@@ -356,7 +362,17 @@ void Menu::OnDeviceReset()
 
 void Menu::Render()
 {
-    ImGui::GetIO().MouseDrawCursor = _visible;
+    ImGuiStyle* style = &ImGui::GetStyle();
+
+    style->WindowPadding = ImVec2(6, 6);
+    style->ItemSpacing = ImVec2(4, 2);
+
+    ImGui::GetStyle().WindowRounding = 0.0f;
+
+    ImGui::GetStyle().ScrollbarRounding = 0.0f;
+
+    ImGui::GetStyle().ScrollbarSize = 5.0f;
+    ImGui::GetIO().MouseDrawCursor = _visible && g_EngineClient->IsInGame();
 
     if (!_visible)
         return;

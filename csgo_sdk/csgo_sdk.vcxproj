@@ -20,7 +20,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
@@ -98,7 +98,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="functions\bhop.cpp" />
+    <ClCompile Include="functions\bullet_tracers.cpp" />
     <ClCompile Include="functions\chams.cpp" />
+    <ClCompile Include="functions\damage_indicator.cpp" />
+    <ClCompile Include="functions\events.cpp" />
     <ClCompile Include="functions\glow.cpp" />
     <ClCompile Include="functions\grenade_pred.cpp" />
     <ClCompile Include="functions\misc.cpp" />
@@ -108,6 +111,7 @@
     <ClCompile Include="imgui\imgui_impl_dx9.cpp" />
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="sdk\KeyValues.cpp" />
     <ClCompile Include="sdk\utils\input.cpp" />
     <ClCompile Include="sdk\utils\math.cpp" />
     <ClCompile Include="sdk\utils\utils.cpp" />
@@ -135,6 +139,9 @@
     <ClInclude Include="config.hpp" />
     <ClInclude Include="fonts\cousine.hpp" />
     <ClInclude Include="fonts\fonts.hpp" />
+    <ClInclude Include="functions\bullet_tracers.h" />
+    <ClInclude Include="functions\damage_indicator.h" />
+    <ClInclude Include="functions\events.hpp" />
     <ClInclude Include="functions\grenade_pred.hpp" />
     <ClInclude Include="functions\misc.hpp" />
     <ClInclude Include="functions\prediction.hpp" />
@@ -148,6 +155,7 @@
     <ClInclude Include="imgui\imstb_rectpack.h" />
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="sdk\KeyValues.h" />
     <ClInclude Include="sdk\misc\datamap.hpp" />
     <ClInclude Include="fonts\droid.hpp" />
     <ClInclude Include="functions\bhop.hpp" />
@@ -226,6 +234,7 @@
     <ClInclude Include="sdk\misc\UtlVector.hpp" />
     <ClInclude Include="sdk\misc\vfunc.hpp" />
     <ClInclude Include="sdk\netvars.hpp" />
+    <ClInclude Include="sdk\ViewRenderBeams.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

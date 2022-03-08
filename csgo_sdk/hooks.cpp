@@ -13,8 +13,10 @@
 #include "functions/misc.hpp"
 #include "functions/prediction.hpp"
 #include "functions/grenade_pred.hpp"
-
+#include "functions/events.hpp"
 #pragma intrinsic(_ReturnAddress)
+
+C_HookedEvents HookedEvents;
 
 void anti_cheat_fix()
 {
@@ -66,6 +68,11 @@ namespace Hooks
 
 		Glow::Get().Shutdown();
 	}
+	
+	void __cdecl hkCL_Move(float_t flFrametime, bool bIsFinalTick)
+	{
+		
+	}
 
 	long __stdcall hkEndScene(IDirect3DDevice9* pDevice)
 	{
@@ -75,7 +82,7 @@ namespace Hooks
 		static auto mat_ambient_light_r = g_CVar->FindVar("mat_ambient_light_r");
 		static auto mat_ambient_light_g = g_CVar->FindVar("mat_ambient_light_g");
 		static auto mat_ambient_light_b = g_CVar->FindVar("mat_ambient_light_b");
-		static auto crosshair_cvar = g_CVar->FindVar("crosshair");
+
 
 		viewmodel_fov->m_fnChangeCallbacks.m_Size = 0;
 		viewmodel_fov->SetValue(g_Configurations.viewmodel_fov);
@@ -83,7 +90,7 @@ namespace Hooks
 		mat_ambient_light_g->SetValue(g_Configurations.mat_ambient_light_g);
 		mat_ambient_light_b->SetValue(g_Configurations.mat_ambient_light_b);
 		
-		crosshair_cvar->SetValue(!(g_Configurations.esp_enabled && g_Configurations.esp_crosshair));
+
 
 		static ConVar* zoom_sensitivity_ratio_mouse = g_CVar->FindVar("zoom_sensitivity_ratio_mouse");
 		if (g_Configurations.remove_zoom)
@@ -200,7 +207,7 @@ namespace Hooks
 		if (g_Configurations.misc_showranks && cmd->buttons & IN_SCORE)
 			g_CHLClient->DispatchUserMessage(CS_UM_ServerRankRevealAll, 0, 0, nullptr);
 
-
+		Misc::Get().QuickReload(cmd);
 		Engine_Prediction::Get().Begin(cmd);
 		{
 			if (g_Configurations.misc_autostrafe)
@@ -320,7 +327,7 @@ namespace Hooks
 				}
 
 				static ConVar* PostProcVar = g_CVar->FindVar("mat_postprocess_enable");
-				PostProcVar->SetValue(g_Configurations.remove_post_processing);
+				PostProcVar->SetValue(!g_Configurations.remove_post_processing);
 
 			}
 			else if (stage == FRAME_RENDER_END)

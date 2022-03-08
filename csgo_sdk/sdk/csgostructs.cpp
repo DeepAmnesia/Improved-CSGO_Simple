@@ -162,7 +162,13 @@ void C_BaseCombatWeapon::UpdateAccuracyPenalty()
 {
 	CallVFunction<void(__thiscall*)(void*)>(this, 484 + VALVE_ADDED_FUNCS)(this);
 }
+int C_BaseCombatWeapon::SubWeaponType()
+{
+	if (!this)
+		return 0.0f;
 
+	return CallVFunction<int(__thiscall*)(void*)>(this, 282)(this);
+}
 CUtlVector<IRefCounted*>& C_BaseCombatWeapon::m_CustomMaterials()
 {	static auto inReload = *(uint32_t*)(Utils::PatternScan(GetModuleHandleW(L"client.dll"), "83 BE ? ? ? ? ? 7F 67") + 2) - 12;
 	return *(CUtlVector<IRefCounted*>*)((uintptr_t)this + inReload);

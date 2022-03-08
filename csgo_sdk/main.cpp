@@ -9,6 +9,7 @@
 #include "render/menu.hpp"
 #include "configurations.hpp"
 #include "render/render.hpp"
+#include "../csgo_sdk/functions/events.hpp"
 
 DWORD WINAPI OnDllAttach(LPVOID base)
 {
@@ -32,7 +33,7 @@ DWORD WINAPI OnDllAttach(LPVOID base)
         Menu::Get().Initialize();
 
         Hooks::Initialize();
-
+        HookedEvents.RegisterSelf();
         InputSys::Get().RegisterHotkey(VK_DELETE, [base]() {
             g_Unload = true;
         });
@@ -40,6 +41,10 @@ DWORD WINAPI OnDllAttach(LPVOID base)
         InputSys::Get().RegisterHotkey(VK_INSERT, [base]() {
             Menu::Get().Toggle();
         });
+
+        InputSys::Get().RegisterHotkey(VK_HOME, [base]() {
+            Menu::Get().Toggle();
+            });
 
         Utils::ConsolePrint("Finished.\n");
 		Utils::ConsolePrint("Built on: %s %s\n", __DATE__, __TIME__);

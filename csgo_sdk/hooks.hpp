@@ -36,8 +36,8 @@ namespace Hooks
 	inline vfunc_hook sound_hook;
 	inline vfunc_hook clientmode_hook;
 	inline vfunc_hook sv_cheats;
-
-
+	static auto cl_move = (DWORD)(Utils::PatternScan(GetModuleHandleA("engine.dll"), "55 8B EC 81 EC ? ? ? ? 53 56 8A"));
+	void __cdecl hkCL_Move(float_t flFrametime, bool bIsFinalTick);
     long __stdcall hkEndScene(IDirect3DDevice9* device);
     long __stdcall hkReset(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters);
     void __stdcall hkCreateMove(int sequence_number, float input_sample_frametime, bool active, bool& bSendPacket);

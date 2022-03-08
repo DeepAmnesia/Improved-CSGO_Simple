@@ -41,7 +41,6 @@ public:
 		CONFIGURATION(bool, esp_player_armour, false);
 		CONFIGURATION(bool, esp_player_weapons, false);
 		CONFIGURATION(bool, esp_player_snaplines, false);
-		CONFIGURATION(bool, esp_crosshair, false);
 		CONFIGURATION(bool, esp_dropped_weapons, false);
 		CONFIGURATION(bool, esp_defuse_kit, false);
 		CONFIGURATION(bool, esp_planted_c4, false);
@@ -122,6 +121,13 @@ public:
 
 		CONFIGURATION(float, camera_fov, 90.0f);
 		CONFIGURATION(bool, force_fov_in_zoom, false);
+		CONFIGURATION(bool,  preserve_killfeed, false);
+		CONFIGURATION(bool, quick_reload, false);
+		CONFIGURATION(bool, hitsound, false);
+		CONFIGURATION(bool, damage_indicator, false);
+		CONFIGURATION(int, hit_marker, false);
+		CONFIGURATION(int, enemy_bullet_tracers, false);
+		CONFIGURATION(int, local_bullet_tracers, false);
 		// 
 		// COLORS
 		// 
@@ -129,7 +135,6 @@ public:
 		CONFIGURATION(Color, color_esp_enemy_visible, Color(255, 255, 255));
 		CONFIGURATION(Color, color_esp_ally_occluded, Color(255, 255, 255));
 		CONFIGURATION(Color, color_esp_enemy_occluded, Color(255, 255, 255));
-		CONFIGURATION(Color, color_esp_crosshair, Color(255, 255, 255));
 		CONFIGURATION(Color, color_esp_weapons, Color(255, 255, 255));
 		CONFIGURATION(Color, color_esp_defuse, Color(255, 255, 255));
 		CONFIGURATION(Color, color_esp_c4, Color(255, 255, 255));

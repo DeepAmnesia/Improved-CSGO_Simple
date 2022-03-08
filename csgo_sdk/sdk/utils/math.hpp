@@ -11,12 +11,12 @@
 
 namespace Math
 {
+	float RandomFloat(float min, float max);
 	inline float FASTSQRT(float x)
 	{
 		unsigned int i = *(unsigned int*)&x;
 
 		i += 127 << 23;
-		// approximation of square root
 		i >>= 1;
 		return *(float*)&i;
 	}

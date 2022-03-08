@@ -29,4 +29,7 @@ private:
 
     IMaterial* materialRegular = nullptr;
     IMaterial* materialFlat = nullptr;
+    IMaterial* materialGlow= nullptr;
+    IMaterial* materialFlowOutline = nullptr;
+    IMaterial* materialGlass = nullptr;
 };
