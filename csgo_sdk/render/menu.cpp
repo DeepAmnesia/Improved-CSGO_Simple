@@ -118,8 +118,8 @@ void RenderEspTab()
         ImGui::Checkbox("Grenade prediction", g_Configurations.esp_grenade_prediction);
         ImGui::Checkbox("Damage indicator", g_Configurations.damage_indicator);
         ImGui::Combo("Hit marker", g_Configurations.hit_marker, "Disabled\0World\0Crosshair");
-        ImGui::Combo("Enemy bullet tracers", g_Configurations.enemy_bullet_tracers, "Disabled\0Line\0Beam");
-        ImGui::Combo("Local bullet tracers", g_Configurations.local_bullet_tracers, "Disabled\0Beam\0Line");
+     //   ImGui::Combo("Enemy bullet tracers", g_Configurations.enemy_bullet_tracers, "Disabled\0Line\0Beam");
+     //   ImGui::Combo("Local bullet tracers", g_Configurations.local_bullet_tracers, "Disabled\0Beam\0Line");
         ImGui::NextColumn();
 
         ImGui::PushItemWidth(100);
@@ -265,7 +265,9 @@ void RenderMiscTab()
         ImGui::Columns(2, nullptr, false);
 
         ImGui::Checkbox("Bunny hop", g_Configurations.misc_bhop);
-        ImGui::Checkbox("Auto strafe", g_Configurations.misc_autostrafe);
+        ImGui::Checkbox("Auto strafe (Rage)", g_Configurations.misc_autostrafe);
+        ImGui::Checkbox("Auto strafe (Legit)", g_Configurations.misc_autostrafe_legit);
+        ImGui::SliderFloat("Retrack", g_Configurations.retrack, 0.f, 15.f);
         ImGui::Checkbox("Remove flash", g_Configurations.remove_flash);
         ImGui::Checkbox("Remove smoke", g_Configurations.remove_smoke);
         ImGui::Checkbox("Remove scope", g_Configurations.remove_zoom);

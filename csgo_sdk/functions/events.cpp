@@ -30,26 +30,27 @@ void C_HookedEvents::FireGameEvent(IGameEvent* pEvent)
 	{
 		C_BasePlayer* hurt = (C_BasePlayer*)(g_EntityList->GetClientEntity(g_EngineClient->GetPlayerForUserID(pEvent->GetInt("userid"))));
 		C_BasePlayer* attacker = (C_BasePlayer*)g_EntityList->GetClientEntity(g_EngineClient->GetPlayerForUserID(pEvent->GetInt("attacker")));
-		if (g_Configurations.hitsound)
+		if (hurt != g_LocalPlayer && attacker == g_LocalPlayer)
 		{
-			if (hurt != g_LocalPlayer && attacker == g_LocalPlayer)
+			if (g_Configurations.hitsound)
 			{
 				g_VGuiSurface->PlaySound_("buttons\\arena_switch_press_02.wav");
 			}
-		}
-		if (g_Configurations.damage_indicator)
-		{
-			int dmg_health = pEvent->GetInt("dmg_health");
-			int hitgroup = pEvent->GetInt("hitgroup");
-			DamageIndicator_t DmgIndicator;
-			DmgIndicator.startTime = g_GlobalVars->curtime;
-			DmgIndicator.hitgroup = hitgroup;
-			DmgIndicator.hitPosition = damage_indicators.c_impactpos;
-			DmgIndicator.damage = dmg_health;
-			DmgIndicator.randomIdx = Math::RandomFloat(-20.f, 20.f);
-			DmgIndicator.valid = true;
-			if (damage_indicators.c_impactpos.x)
-				damage_indicators.floatingTexts.push_back(DmgIndicator);
+			if (g_Configurations.damage_indicator)
+			{
+
+				int dmg_health = pEvent->GetInt("dmg_health");
+				int hitgroup = pEvent->GetInt("hitgroup");
+				DamageIndicator_t DmgIndicator;
+				DmgIndicator.startTime = g_GlobalVars->curtime;
+				DmgIndicator.hitgroup = hitgroup;
+				DmgIndicator.hitPosition = damage_indicators.c_impactpos;
+				DmgIndicator.damage = dmg_health;
+				DmgIndicator.randomIdx = Math::RandomFloat(-20.f, 20.f);
+				DmgIndicator.valid = true;
+				if (damage_indicators.c_impactpos.x)
+					damage_indicators.floatingTexts.push_back(DmgIndicator);
+			}
 		}
 	}
 	if (!strcmp(pEvent->GetName(), "bullet_impact"))

@@ -22,25 +22,25 @@ void DamageIndicators::paint()
 		if (!txt->valid)
 			continue;
 
-		float endTime = txt->startTime + 2.0f;
+		float EndTime = txt->startTime + 2.0f;
 
-		if (endTime < g_GlobalVars->curtime)
+		if (EndTime < g_GlobalVars->curtime)
 		{
 			txt->valid = false;
 			continue;
 		}
 
-		Vector origin_screen;
+		
 		Vector MarkerOrigin;
 		if (!Math::WorldToScreen(txt->hitPosition, MarkerOrigin))
 			return;
 
-		origin_screen = MarkerOrigin;
+		Vector OriginScreen = MarkerOrigin;
 
-		float t = 1.0f - (endTime - g_GlobalVars->curtime) / (endTime - txt->startTime);
+		float t = 1.0f - (EndTime - g_GlobalVars->curtime) / (EndTime - txt->startTime);
 
-		origin_screen.y -= t * (50.0f);
-		origin_screen.x -= (float)txt->randomIdx * t * 3.0f;
+		OriginScreen.y -= t * (50.0f);
+		OriginScreen.x -= (float)txt->randomIdx * t * 3.0f;
 		if (g_Configurations.damage_indicator)
 		{
 			char msg[12];
@@ -53,7 +53,7 @@ void DamageIndicators::paint()
 			else if (txt->damage >= 0 && txt->damage <= 32)
 				damage_color = Color(0, 255, 0, 255);
 
-			Render::Get().RenderText(msg, ImVec2(origin_screen.x, origin_screen.y), 22.f, damage_color, true);
+			Render::Get().RenderText(msg, ImVec2(OriginScreen.x, OriginScreen.y), 22.f, damage_color, true);
 		}
 		if (g_Configurations.hit_marker == 1)
 		{

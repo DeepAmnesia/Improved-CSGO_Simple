@@ -92,6 +92,8 @@ public:
 		//
 		CONFIGURATION(bool, misc_bhop, false);
 		CONFIGURATION(bool, misc_autostrafe, false);
+		CONFIGURATION(bool, misc_autostrafe_legit, false);
+		CONFIGURATION(float, retrack, 0.f);
 		CONFIGURATION(bool, misc_no_hands, false);
 		CONFIGURATION(bool, misc_thirdperson, false);
 		CONFIGURATION(bool, misc_showranks, true);

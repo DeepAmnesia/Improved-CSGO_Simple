@@ -11,6 +11,7 @@
 
 namespace Math
 {
+	void MovementFix(CUserCmd* m_Cmd, QAngle wish_angle, QAngle old_angles);
 	float RandomFloat(float min, float max);
 	inline float FASTSQRT(float x)
 	{
@@ -39,9 +40,15 @@ namespace Math
     void VectorAngles(const Vector& forward, QAngle& angles);
     bool WorldToScreen(const Vector& in, Vector& out);
 	float NormalizeYaw(float value);
-	template < typename T >
-	T Clamp(T in, T low, T high) 
+	template<class T, class U>
+	static T clamp(const T& in, const U& low, const U& high)
 	{
-		return min(max(in, low), high);
+		if (in <= low)
+			return low;
+
+		if (in >= high)
+			return high;
+
+		return in;
 	}
 }

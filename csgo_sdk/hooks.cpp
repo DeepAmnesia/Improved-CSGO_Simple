@@ -210,7 +210,6 @@ namespace Hooks
 		Misc::Get().QuickReload(cmd);
 		Engine_Prediction::Get().Begin(cmd);
 		{
-			if (g_Configurations.misc_autostrafe)
 				Misc::Get().AutoStrafe(cmd);
 
 			if (g_Configurations.esp_grenade_prediction)
