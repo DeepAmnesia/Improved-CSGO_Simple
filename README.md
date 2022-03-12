@@ -5,6 +5,21 @@ https://github.com/xsslize/csgo_sdk updated this SDK first (added chams on weapo
 
 # Changelog
 
+
+# 12.03.2020
+
+  * Added legit strafes + retrack scale
+  * Fixed remove post-processing bug
+  * Quick reload
+  * Hit sound
+  * Damage marker
+  * Hit marker
+  * Added comfortable event system
+
+
+![Screenshot after upd1](https://i.imgur.com/9ONvptD.jpg)
+![Screenshot after upd2](https://i.imgur.com/UEhwyTw.jpg)
+
 # 01.03.2020
 
   * Remove scope
