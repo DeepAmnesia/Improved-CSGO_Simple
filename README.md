@@ -25,6 +25,7 @@ https://github.com/xsslize/csgo_sdk updated this SDK first (added chams on weapo
   * Added bind list
   * Added spectator list
   * Added show aim fov
+  * New config system using json
 
   ![Screenshot after upd3](https://i.imgur.com/cx4rCZ4.png)
   ![Screenshot after upd4](https://i.imgur.com/qWDdRgu.png)
