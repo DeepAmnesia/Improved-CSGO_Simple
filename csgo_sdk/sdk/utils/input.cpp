@@ -1,13 +1,12 @@
 #include "input.hpp"
 
 #include "../sdk.hpp"
-#include "../../imgui/imgui.h"
-#include "../../imgui/imgui_impl_win32.h"
-#include "../../render/menu.hpp"
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_win32.h"
+#include "../render/menu.hpp"
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-InputSys::InputSys() : m_hTargetWindow(nullptr), m_ulOldWndProc(0)
+InputSys::InputSys()
+	: m_hTargetWindow(nullptr), m_ulOldWndProc(0)
 {
 }
 
@@ -17,35 +16,43 @@ InputSys::~InputSys()
 		SetWindowLongPtr(m_hTargetWindow, GWLP_WNDPROC, m_ulOldWndProc);
 	m_ulOldWndProc = 0;
 }
-
 void InputSys::Initialize()
 {
 	D3DDEVICE_CREATION_PARAMETERS params;
 
 	if (FAILED(g_D3DDevice9->GetCreationParameters(&params)))
-		throw std::runtime_error("[InputSys] GetCreationParameters failed.");
+		return;
 
 	m_hTargetWindow = params.hFocusWindow;
 	m_ulOldWndProc = SetWindowLongPtr(m_hTargetWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
 	if (!m_ulOldWndProc)
-		throw std::runtime_error("[InputSys] SetWindowLongPtr failed.");
+		return;
 }
 
 LRESULT __stdcall InputSys::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	Get().ProcessMessage(msg, wParam, lParam);
 
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam) && Menu::Get().IsVisible())
+	bool bPressedMovementKeys = false;
+	if (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP || msg == WM_LBUTTONUP || msg == WM_MOUSEMOVE || msg == WM_MOUSEWHEEL)
+		bPressedMovementKeys = true;
+
+	if (ImGui::GetIO().WantTextInput)
+		bPressedMovementKeys = false;
+
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam) && Menu::Get().IsVisible() && !bPressedMovementKeys)
 		return true;
+
+	if (Menu::Get().IsVisible() && bPressedMovementKeys)
+		return false;
 
 	return CallWindowProc((WNDPROC)Get().m_ulOldWndProc, hWnd, msg, wParam, lParam);
 }
 
 bool InputSys::ProcessMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch (uMsg) 
-	{
+	switch (uMsg) {
 	case WM_MBUTTONDBLCLK:
 	case WM_RBUTTONDBLCLK:
 	case WM_LBUTTONDBLCLK:
@@ -64,7 +71,8 @@ bool InputSys::ProcessMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
 		return ProcessKeybdMessage(uMsg, wParam, lParam);
-
+	default:
+		return false;
 	}
 }
 
@@ -72,8 +80,7 @@ bool InputSys::ProcessMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	auto key = VK_LBUTTON;
 	auto state = KeyState::None;
-	switch (uMsg) 
-	{
+	switch (uMsg) {
 	case WM_MBUTTONDOWN:
 	case WM_MBUTTONUP:
 	case WM_MBUTTONDBLCLK:
@@ -106,7 +113,6 @@ bool InputSys::ProcessMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		m_iKeyMap[key] = KeyState::Pressed;
 	else
 		m_iKeyMap[key] = state;
-
 	return true;
 }
 
@@ -115,8 +121,7 @@ bool InputSys::ProcessKeybdMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	auto key = wParam;
 	auto state = KeyState::None;
 
-	switch (uMsg) 
-	{
+	switch (uMsg) {
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 		state = KeyState::Down;
@@ -129,8 +134,7 @@ bool InputSys::ProcessKeybdMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return false;
 	}
 
-	if (state == KeyState::Up && m_iKeyMap[int(key)] == KeyState::Down) 
-	{
+	if (state == KeyState::Up && m_iKeyMap[int(key)] == KeyState::Down) {
 		m_iKeyMap[int(key)] = KeyState::Pressed;
 
 		auto& hotkey_callback = m_Hotkeys[key];
@@ -139,32 +143,26 @@ bool InputSys::ProcessKeybdMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			hotkey_callback();
 
 	}
-	else 
-	{
+	else {
 		m_iKeyMap[int(key)] = state;
 	}
 
 	return true;
 }
-
 KeyState InputSys::GetKeyState(std::uint32_t vk)
 {
 	return m_iKeyMap[vk];
 }
-
 bool InputSys::IsKeyDown(std::uint32_t vk)
 {
 	return m_iKeyMap[vk] == KeyState::Down;
 }
-
 bool InputSys::WasKeyPressed(std::uint32_t vk)
 {
-	if (m_iKeyMap[vk] == KeyState::Pressed) 
-	{
+	if (m_iKeyMap[vk] == KeyState::Pressed) {
 		m_iKeyMap[vk] = KeyState::Up;
 		return true;
 	}
-
 	return false;
 }
 
@@ -172,7 +170,6 @@ void InputSys::RegisterHotkey(std::uint32_t vk, std::function<void(void)> f)
 {
 	m_Hotkeys[vk] = f;
 }
-
 void InputSys::RemoveHotkey(std::uint32_t vk)
 {
 	m_Hotkeys[vk] = nullptr;

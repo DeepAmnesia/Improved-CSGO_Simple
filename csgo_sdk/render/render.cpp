@@ -20,6 +20,12 @@ ImDrawListSharedData _data;
 
 std::mutex render_mutex;
 
+struct CUSTOMVERTEX {
+	FLOAT x, y, z;
+	FLOAT rhw;
+	DWORD color;
+};
+
 void Render::Initialize()
 {
 	ImGui::CreateContext();
@@ -142,4 +148,130 @@ void Render::RenderCircle3D(Vector position, float points, float radius, Color c
 
 		RenderLine(start2d.x, start2d.y, end2d.x, end2d.y, color);
 	}
+}
+
+void Render::RenderCircleDualColor(float x, float y, float rad, float rotate, int type, int resolution, DWORD color, DWORD color2) {
+	LPDIRECT3DVERTEXBUFFER9 g_pVB2;
+
+	std::vector<CUSTOMVERTEX> circle(resolution + 2);
+
+	float angle = rotate * D3DX_PI / 180, pi = D3DX_PI;
+
+	if (type == 1)
+		pi = D3DX_PI; // Full circle
+	if (type == 2)
+		pi = D3DX_PI / 2; // 1/2 circle
+	if (type == 3)
+		pi = D3DX_PI / 4; // 1/4 circle
+
+	pi = D3DX_PI / type; // 1/4 circle
+
+	circle[0].x = x;
+	circle[0].y = y;
+	circle[0].z = 0;
+	circle[0].rhw = 1;
+	circle[0].color = color2;
+
+	for (int i = 1; i < resolution + 2; i++)
+	{
+		circle[i].x = (float)(x - rad * cos(pi * ((i - 1) / (resolution / 2.0f))));
+		circle[i].y = (float)(y - rad * sin(pi * ((i - 1) / (resolution / 2.0f))));
+		circle[i].z = 0;
+		circle[i].rhw = 1;
+		circle[i].color = color;
+	}
+
+	// Rotate matrix
+	int _res = resolution + 2;
+	for (int i = 0; i < _res; i++)
+	{
+		circle[i].x = x + cos(angle) * (circle[i].x - x) - sin(angle) * (circle[i].y - y);
+		circle[i].y = y + sin(angle) * (circle[i].x - x) + cos(angle) * (circle[i].y - y);
+	}
+
+	g_D3DDevice9->CreateVertexBuffer((resolution + 2) * sizeof(CUSTOMVERTEX), D3DUSAGE_WRITEONLY, D3DFVF_XYZRHW | D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &g_pVB2, NULL);
+
+	VOID* pVertices;
+	g_pVB2->Lock(0, (resolution + 2) * sizeof(CUSTOMVERTEX), (void**)&pVertices, 0);
+	memcpy(pVertices, &circle[0], (resolution + 2) * sizeof(CUSTOMVERTEX));
+	g_pVB2->Unlock();
+
+	g_D3DDevice9->SetTexture(0, NULL);
+	g_D3DDevice9->SetPixelShader(NULL);
+	g_D3DDevice9->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	g_D3DDevice9->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	g_D3DDevice9->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	g_D3DDevice9->SetStreamSource(0, g_pVB2, 0, sizeof(CUSTOMVERTEX));
+	g_D3DDevice9->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+	g_D3DDevice9->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, resolution);
+	if (g_pVB2 != NULL)
+		g_pVB2->Release();
+}
+
+void Render::RenderCircleDualColor(float x, float y, float rad, float rotate, int type, int resolution) {
+	LPDIRECT3DVERTEXBUFFER9 g_pVB2;
+
+	std::vector<CUSTOMVERTEX> circle(resolution + 2);
+
+	float angle = rotate * D3DX_PI / 180, pi = D3DX_PI;
+
+	if (type == 1)
+		pi = D3DX_PI; // Full circle
+	if (type == 2)
+		pi = D3DX_PI / 2; // 1/2 circle
+	if (type == 3)
+		pi = D3DX_PI / 4; // 1/4 circle
+
+	pi = D3DX_PI / type; // 1/4 circle
+
+	circle[0].x = x;
+	circle[0].y = y;
+	circle[0].z = 0;
+	circle[0].rhw = 1;
+	circle[0].color = D3DCOLOR_RGBA(0, 0, 0, 0);
+
+	float hue = 0.f;
+
+	for (int i = 1; i < resolution + 2; i++)
+	{
+		circle[i].x = (float)(x - rad * cos(pi * ((i - 1) / (resolution / 2.0f))));
+		circle[i].y = (float)(y - rad * sin(pi * ((i - 1) / (resolution / 2.0f))));
+		circle[i].z = 0;
+		circle[i].rhw = 1;
+
+		auto clr = Color::FromHSB(hue, 1.f, 1.f);
+		circle[i].color = D3DCOLOR_RGBA(clr.r(), clr.g(), clr.b(), 150);
+		hue += 0.02;
+	}
+
+	// Rotate matrix
+	int _res = resolution + 2;
+	for (int i = 0; i < _res; i++)
+	{
+		float Vx1 = x + (cosf(angle) * (circle[i].x - x) - sinf(angle) * (circle[i].y - y));
+		float Vy1 = y + (sinf(angle) * (circle[i].x - x) + cosf(angle) * (circle[i].y - y));
+
+		circle[i].x = Vx1;
+		circle[i].y = Vy1;
+	}
+
+	g_D3DDevice9->CreateVertexBuffer((resolution + 2) * sizeof(CUSTOMVERTEX), D3DUSAGE_WRITEONLY, D3DFVF_XYZRHW | D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &g_pVB2, NULL);
+
+	VOID* pVertices;
+	g_pVB2->Lock(0, (resolution + 2) * sizeof(CUSTOMVERTEX), (void**)&pVertices, 0);
+	memcpy(pVertices, &circle[0], (resolution + 2) * sizeof(CUSTOMVERTEX));
+	g_pVB2->Unlock();
+
+	g_D3DDevice9->SetTexture(0, NULL);
+	g_D3DDevice9->SetPixelShader(NULL);
+	g_D3DDevice9->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	g_D3DDevice9->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	g_D3DDevice9->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	g_D3DDevice9->SetStreamSource(0, g_pVB2, 0, sizeof(CUSTOMVERTEX));
+	g_D3DDevice9->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+	g_D3DDevice9->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, resolution);
+	if (g_pVB2 != NULL)
+		g_pVB2->Release();
 }

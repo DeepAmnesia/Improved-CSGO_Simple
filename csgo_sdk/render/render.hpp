@@ -52,7 +52,11 @@ public:
 	void RenderImage(ImTextureID user_texture_id, const ImVec2& a, const ImVec2& b, const ImVec2& uv_a = ImVec2(0, 0), const ImVec2& uv_b = ImVec2(1, 1), ImU32 col = 0xFFFFFFFF) {
 		draw_list->AddImage(user_texture_id, a, b, uv_a, uv_b, col);
 	}
-
+	template <class T>
+	inline void RenderBoxGradient(T x, T y, T x1, T y1, Color c1, Color c2, float thickness = 1.f, float rounding = 0.f) {
+		if (!g_Unload)
+			draw_list->AddRectFilledMultiColor(ImVec2((float)x, (float)y), ImVec2((float)x1, (float)y1), GetU32(c1), GetU32(c1), GetU32(c2), GetU32(c2));
+	}
 	template <class T>
 	inline void RenderBoxByType(T x1, T y1, T x2, T y2, Color color, float thickness = 1.f, int type = 0) {
 		if (type == 0)
@@ -117,4 +121,17 @@ public:
 	inline void RenderCircleFilled(T x, T y, float radius, int points, Color color) {
 		draw_list->AddCircleFilled(ImVec2(x, y), radius, GetU32(color), points);
 	}
+	template <class T>
+		inline void RenderTriangle(T p1, T p2, T p3, Color color) {
+		if (!g_Unload)
+			draw_list->AddTriangle(p1, p2, p3, GetU32(color));
+	}
+	template <class T>
+	inline void RenderTriangleFilled(T p1, T p2, T p3, Color color) {
+		if (!g_Unload)
+			draw_list->AddTriangleFilled(p1, p2, p3, GetU32(color));
+	}
+
+	void RenderCircleDualColor(float x, float y, float rad, float rotate, int type, int resolution, DWORD color, DWORD color2);
+	void RenderCircleDualColor(float x, float y, float rad, float rotate, int type, int resolution);
 };

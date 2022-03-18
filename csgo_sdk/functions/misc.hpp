@@ -12,7 +12,9 @@
 class Misc : public Singleton<Misc>
 {
 public:
-	void AutoStrafe(CUserCmd* cmd);
-
+	void AutoStrafe(CUserCmd* pCmd);
+	void FastStop(CUserCmd* pCmd);
+	void EdgeJump(CUserCmd* pCmd);
 	void QuickReload(CUserCmd* cmd);
+	void MouseCorrection(CUserCmd* cmd);
 };

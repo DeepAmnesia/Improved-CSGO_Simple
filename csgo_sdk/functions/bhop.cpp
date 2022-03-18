@@ -4,6 +4,22 @@
 
 void BunnyHop::OnCreateMove(CUserCmd* cmd)
 {
+ 
+    if (!g_LocalPlayer->IsAlive())
+        return;
+
+   
+
+    if (g_LocalPlayer->m_nMoveType() == MOVETYPE_NOCLIP ||
+        g_LocalPlayer->m_nMoveType() == MOVETYPE_LADDER)
+        return;
+
+    if (g_LocalPlayer->m_fFlags() & FL_ONGROUND)
+        return;
+
+    cmd->buttons &= ~IN_JUMP;
+
+    /*
     static bool jumped_last_tick = false;
     static bool should_fake_jump = false;
 
@@ -42,4 +58,5 @@ void BunnyHop::OnCreateMove(CUserCmd* cmd)
         jumped_last_tick = false;
         should_fake_jump = false;
     }
+    */
 }

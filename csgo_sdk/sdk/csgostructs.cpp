@@ -337,7 +337,48 @@ CCSGOPlayerAnimState *C_BasePlayer::GetPlayerAnimState()
 {
 	return *(CCSGOPlayerAnimState**)((DWORD)this + 0x9960);
 }
+/*
+Vector C_BasePlayer::get_shoot_position()
+{
+	if (!this) 
+		return NULL;
 
+	auto shoot_position = m_vecOrigin() + m_vecViewOffset();
+
+	if (this != g_LocalPlayer) 
+		return shoot_position;
+
+	modify_eye_position(shoot_position);
+	return shoot_position;
+}
+
+void C_BasePlayer::modify_eye_position(Vector& eye_position)
+{
+	if (!this)
+		return;
+
+	if (!local_animations::get().local_data.prediction_animstate)
+		return;
+
+	if (!local_animations::get().local_data.prediction_animstate->m_bInHitGroundAnimation && local_animations::get().local_data.prediction_animstate->m_fDuckAmount <= 0.0f)
+		return;
+
+	local_animations::get().local_data.prediction_animstate->m_pBaseEntity = this;
+
+	static auto lookup_bone = reinterpret_cast <int(__thiscall*)(void*, const char*)> (util::FindSignature(crypt_str("client.dll"), crypt_str("55 8B EC 53 56 8B F1 57 83 BE ?? ?? ?? ?? ?? 75 14")));
+	auto head_bone = lookup_bone(local_animations::get().local_data.prediction_animstate->m_pBaseEntity, crypt_str("head_0"));
+
+	if (head_bone == -1)
+		return;
+
+	auto head_position = Vector(g_ctx.globals.prediction_matrix[head_bone][0][3], g_ctx.globals.prediction_matrix[head_bone][1][3], g_ctx.globals.prediction_matrix[head_bone][2][3] + 1.7f);
+
+	if (head_position.z >= eye_position.z)
+		return;
+
+	eye_position.z = math::lerp2(math::simple_spline_remap_val_clamped(fabs(eye_position.z - head_position.z), 4.0f, 10.0f, 0.0f, 1.0f), eye_position.z, head_position.z);
+}
+*/
 void C_BasePlayer::UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angle)
 {
 	static auto UpdateAnimState = Utils::PatternScan(
@@ -395,7 +436,10 @@ player_info_t C_BasePlayer::GetPlayerInfo()
 
 bool C_BasePlayer::IsAlive()
 {
-	return m_lifeState() == LIFE_ALIVE;
+
+	return this->m_iHealth() > 0;
+
+
 }
 
 bool C_BasePlayer::IsFlashed()
@@ -519,6 +563,19 @@ bool C_BasePlayer::CanSeePlayer(C_BasePlayer* player, const Vector& pos)
 	g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
 
 	return tr.hit_entity == player || tr.fraction > 0.97f;
+}
+
+float C_BasePlayer::CanSeePlayerD(C_BasePlayer* player, const Vector& pos)
+{
+	CGameTrace tr;
+	Ray_t ray;
+	CTraceFilter filter;
+	filter.pSkip = this;
+
+	ray.Init(GetEyePos(), pos);
+	g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
+
+	return tr.fraction;
 }
 
 void C_BasePlayer::UpdateClientSideAnimation()

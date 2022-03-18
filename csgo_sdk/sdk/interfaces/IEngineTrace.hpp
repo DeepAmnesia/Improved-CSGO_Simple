@@ -325,6 +325,29 @@ struct Ray_t
 
     Ray_t() : m_pWorldAxisTransform(NULL) {}
 
+    __forceinline Ray_t(const Vector& start, const Vector& end, const Vector& mins, const Vector& maxs) {
+
+        m_Delta = VectorAligned{ end - start };
+
+        m_pWorldAxisTransform = nullptr;
+
+        m_IsSwept = m_Delta.LengthSqr() != 0.f;
+
+        m_Extents = VectorAligned{ maxs - mins };
+
+        m_Extents *= 0.5f;
+
+        m_IsRay = m_Extents.LengthSqr() < 1e-6;
+
+        m_StartOffset = VectorAligned{ mins + maxs };
+
+        m_StartOffset *= 0.5f;
+
+        m_Start = VectorAligned{ start + m_StartOffset };
+
+        m_StartOffset *= -1.f;
+
+    }
     void Init(Vector const& start, Vector const& end)
     {
         m_Delta = end - start;
@@ -444,30 +467,20 @@ private:
         startsolid = other.startsolid;
     }
 
-    CGameTrace& CGameTrace::operator=(const CGameTrace& other)
-    {
-        startpos = other.startpos;
-        endpos = other.endpos;
-        plane = other.plane;
-        fraction = other.fraction;
-        contents = other.contents;
-        dispFlags = other.dispFlags;
-        allsolid = other.allsolid;
-        startsolid = other.startsolid;
-        fractionleftsolid = other.fractionleftsolid;
-        surface = other.surface;
-        hitgroup = other.hitgroup;
-        physicsbone = other.physicsbone;
-        worldSurfaceIndex = other.worldSurfaceIndex;
-        hit_entity = other.hit_entity;
-        hitbox = other.hitbox;
-        return *this;
-    }
+ 
 };
 
 inline bool CGameTrace::DidHit() const
 {
     return fraction < 1 || allsolid || startsolid;
+}
+inline bool CGameTrace::DidHitWorld() const
+{
+    return hit_entity->EntIndex() == 0;
+}
+inline bool CGameTrace::DidHitNonWorldEntity() const
+{
+    return hit_entity != NULL && !DidHitWorld();
 }
 
 inline bool CGameTrace::IsVisible() const

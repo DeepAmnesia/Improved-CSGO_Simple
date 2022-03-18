@@ -38,6 +38,7 @@
 #include "Interfaces/IPhysics.hpp"
 #include "Interfaces/IInputSystem.hpp"
 #include "interfaces/IRefCounted.hpp"
+#include "interfaces/IVRenderBeams.h"
 
 #include "Misc/Convar.hpp"
 #include "Misc/CUserCmd.hpp"
@@ -82,7 +83,7 @@ inline CClientState*         g_ClientState    = nullptr;
 inline IPhysicsSurfaceProps* g_PhysSurface    = nullptr;
 inline IInputSystem*         g_InputSystem    = nullptr;
 inline IWeaponSystem*        g_WeaponSystem   = nullptr;
-
+inline IViewRenderBeams*     g_ViewRenderBeams= nullptr;
 template<typename... Args>
 void ConMsg(const char* pMsg, Args... args)
 {

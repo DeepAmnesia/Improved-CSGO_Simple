@@ -3,6 +3,11 @@
 #include "../Math/QAngle.hpp"
 #include "../Math/VMatrix.hpp"
 
+#define VIRTUAL(function_name, index, type, ...) \
+auto function_name { \
+return CallVFunction <type> (this, index)(this, __VA_ARGS__); \
+};
+
 enum PreviewImageRetVal_t
 {
     MATERIAL_PREVIEW_IMAGE_BAD = 0,
@@ -53,14 +58,20 @@ typedef int OverrideType_t;
 typedef int ImageFormat;
 typedef int VertexFormat_t;
 typedef int MaterialPropertyTypes_t;
-
 class IClientRenderable;
 class IMaterial;
 class CStudioHdr;
 class IMatRenderContext;
 class DataCacheHandle_t;
 class ITexture;
-class IMaterialVar;
+class IMaterialVar
+{
+public:
+    VIRTUAL(SetFloatValue(float val), 4, void(__thiscall*)(void*, float), val);
+    VIRTUAL(SetIntValue(int val), 5, void(__thiscall*)(void*, int), val);
+    VIRTUAL(SetStringValue(const char* val), 6, void(__thiscall*)(void*, const char*), val);
+    VIRTUAL(SetVecValue(float x, float y, float z), 11, void(__thiscall*)(void*, float, float, float), x, y, z);
+};
 class KeyValues;
 struct model_t;
 struct mstudioanimdesc_t;

@@ -47,7 +47,18 @@ enum CSWeaponType
 	WEAPONTYPE_GRENADE,
 	WEAPONTYPE_UNKNOWN
 };
+enum ObserverType_t
+{
+	OBS_MODE_NONE = 0,	// not in spectator mode
+	OBS_MODE_DEATHCAM,	// special mode for death cam animation
+	OBS_MODE_FREEZECAM,	// zooms to a target, and freeze-frames on them
+	OBS_MODE_FIXED,		// view from a fixed camera position
+	OBS_MODE_IN_EYE,	// follow a player in first person view
+	OBS_MODE_CHASE,		// follow a player in third person view
+	OBS_MODE_ROAMING,	// free roaming
 
+	NUM_OBSERVER_MODES,
+};
 class C_BaseEntity;
 
 
@@ -247,7 +258,7 @@ public:
 	NETVAR(float, m_flCycle, "DT_BaseAnimating", "m_flCycle");
 	NETVAR(int, m_nSequence, "DT_BaseViewModel", "m_nSequence");
 	NETVAR(float, m_flNextAttack, "DT_BaseCombatCharacter", "m_flNextAttack");
-
+	NETVAR(int, m_iObserverMode, "DT_BasePlayer", "m_iObserverMode");
 	//NETVAR(int, m_iAccount, "DT_CSPlayer", "m_iAccount");
 
 
@@ -303,7 +314,8 @@ public:
 		return *(float_t*)((uintptr_t)this + _m_flMaxspeed);
 	}
 
-
+	Vector get_shoot_position();
+	void modify_eye_position(Vector& eye_position);
 
 	Vector        GetEyePos();
 	player_info_t GetPlayerInfo();
@@ -316,11 +328,29 @@ public:
 	Vector        GetBonePos(int bone);
 	bool          CanSeePlayer(C_BasePlayer* player, int hitbox);
 	bool          CanSeePlayer(C_BasePlayer* player, const Vector& pos);
+	float         CanSeePlayerD(C_BasePlayer* player, const Vector& pos);
 	void UpdateClientSideAnimation();
 
 	int m_nMoveType();
 	QAngle * GetVAngles();
 	float_t m_flSpawnTime();
+
+	bool IsNotTarget() {
+		if (!this || this == g_LocalPlayer)
+			return true;
+
+		if (m_iHealth() <= 0)
+			return true;
+
+		if (m_bGunGameImmunity())
+			return true;
+
+		if (m_fFlags() & FL_FROZEN)
+			return true;
+
+		int entIndex = EntIndex();
+		return entIndex > g_GlobalVars->maxClients;
+	}
 
 };
 

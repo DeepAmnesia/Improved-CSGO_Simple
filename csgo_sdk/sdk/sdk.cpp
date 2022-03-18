@@ -68,6 +68,7 @@ namespace Interfaces
 		g_ClientState     =     **(CClientState***)(Utils::PatternScan(engine, "A1 ? ? ? ? 8B 80 ? ? ? ? C3") + 1);
 		g_LocalPlayer     =       *(C_LocalPlayer*)(Utils::PatternScan(client, "8B 0D ? ? ? ? 83 FF FF 74 07") + 2);
 		g_WeaponSystem    = *(IWeaponSystem * *)(Utils::PatternScan(client, "8B 35 ? ? ? ? FF 10 0F B7 C0") + 2);
+        g_ViewRenderBeams = *(IViewRenderBeams**)(Utils::PatternScan(client, "A1 ? ? ? ? FF 10 A1 ? ? ? ? B9") + 1);;
     }
 
     void Dump()
@@ -96,5 +97,6 @@ namespace Interfaces
         PRINT_INTERFACE(g_VGuiSurface );
         PRINT_INTERFACE(g_PhysSurface );
         PRINT_INTERFACE(g_InputSystem );
+        PRINT_INTERFACE(g_ViewRenderBeams);
     }
 }

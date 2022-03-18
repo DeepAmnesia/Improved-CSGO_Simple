@@ -59,19 +59,6 @@ namespace Math
             }
         }
     }
-
-    float RandomFloat(float min, float max)
-    {
-        static auto ranFloat = reinterpret_cast<float(*)(float, float)>(GetProcAddress(GetModuleHandleW(L"vstdlib.dll"), "RandomFloat"));
-        if (ranFloat)
-        {
-            return ranFloat(min, max);
-        }
-        else
-        {
-            return 0.f;
-        }
-    }
 	//--------------------------------------------------------------------------------
 	float VectorDistance(const Vector& v1, const Vector& v2)
 	{
@@ -227,4 +214,26 @@ namespace Math
         return value;
     }
     //--------------------------------------------------------------------------------
+    void FixAngles(QAngle& angles)
+    {
+        Normalize3(angles);
+        ClampAngles(angles);
+    }  
+    float RandomFloat(float min, float max)
+    {
+        static auto ranFloat = reinterpret_cast<float(*)(float, float)>(GetProcAddress(GetModuleHandleW(L"vstdlib.dll"), "RandomFloat"));
+        if (ranFloat)
+        {
+            return ranFloat(min, max);
+        }
+        else
+        {
+            return 0.f;
+        }
+    }
+    //--------------------------------------------------------------------------------
+    void RandomSeed(uint32_t seed) {
+        static auto fn = reinterpret_cast<void(__cdecl*)(uint32_t)>(GetProcAddress(GetModuleHandleW(L"vstdlib.dll"), "RandomSeed"));
+        fn(seed);
+    }
 }

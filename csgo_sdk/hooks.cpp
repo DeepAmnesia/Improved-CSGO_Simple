@@ -14,10 +14,17 @@
 #include "functions/prediction.hpp"
 #include "functions/grenade_pred.hpp"
 #include "functions/events.hpp"
+#include "functions/nightmode.h"
+#include "functions/aimbot.hpp"
+#include "functions/backtrack.hpp"
+#include "helpers/keybinds.hpp"
+
+
 #pragma intrinsic(_ReturnAddress)
-
+bool changed = false;
+std::string backup_skybox = "";
 C_HookedEvents HookedEvents;
-
+CL_Move_t m_CL_Move = NULL;
 void anti_cheat_fix()
 {
 	const char* modules[] ={ "client.dll", "engine.dll", "server.dll", "studiorender.dll", "materialsystem.dll", "shaderapidx9.dll", "vstdlib.dll", "vguimatsurface.dll" };
@@ -25,7 +32,201 @@ void anti_cheat_fix()
 	for (auto test : modules)
 		WriteProcessMemory(GetCurrentProcess(), (LPVOID)Utils::PatternScan(GetModuleHandleA(test), "55 8B EC 56 8B F1 33 C0 57 8B 7D 08"), &sub_21445, 7, 0);
 }
+void fog_changer()
+{
+	static auto fog_override = g_CVar->FindVar("fog_override");
 
+	if (!g_Configurations.enable_fog)
+	{
+		if (fog_override->GetBool())
+			fog_override->SetValue(FALSE);
+		return;
+	}
+
+	if (!fog_override->GetBool())
+		fog_override->SetValue(TRUE);
+
+	static auto fog_start = g_CVar->FindVar("fog_start");
+
+	if (fog_start->GetInt() != g_Configurations.fog_start_distance)
+		fog_start->SetValue(g_Configurations.fog_start_distance);
+
+	static auto fog_end = g_CVar->FindVar("fog_end");
+
+	if (fog_end->GetInt() != g_Configurations.fog_end_distance)
+		fog_end->SetValue(g_Configurations.fog_end_distance);
+
+	static auto fog_maxdensity = g_CVar->FindVar("fog_maxdensity");
+
+	if (fog_maxdensity->GetFloat() != (float)g_Configurations.fog_density * 0.01f)
+		fog_maxdensity->SetValue((float)g_Configurations.fog_density * 0.01f);
+
+	char buffer_color[12];
+	sprintf_s(buffer_color, 12, "%i %i %i", g_Configurations.fog_color.r(), g_Configurations.fog_color.g(), g_Configurations.fog_color.b());
+
+	static auto fog_color = g_CVar->FindVar("fog_color");
+
+	if (strcmp(fog_color->GetString(), buffer_color))
+		fog_color->SetValue(buffer_color);
+}
+
+void skybox_changer()
+{
+	static auto fnLoadNamedSkys = (void(__fastcall*)(const char*))Utils::PatternScan(GetModuleHandleA("engine.dll"), "55 8B EC 81 EC ? ? ? ? 56 57 8B F9 C7 45");
+	auto skybox_name = backup_skybox;
+
+	switch (g_Configurations.skybox_num)
+	{
+	case 1:
+		skybox_name = "cs_tibet";
+		break;
+	case 2:
+		skybox_name = "cs_baggage_skybox_";
+		break;
+	case 3:
+		skybox_name = "italy";
+		break;
+	case 4:
+		skybox_name = "jungle";
+		break;
+	case 5:
+		skybox_name = "office";
+		break;
+	case 6:
+		skybox_name = "sky_cs15_daylight01_hdr";
+		break;
+	case 7:
+		skybox_name = "sky_cs15_daylight02_hdr";
+		break;
+	case 8:
+		skybox_name = "vertigoblue_hdr";
+		break;
+	case 9:
+		skybox_name = "vertigo";
+		break;
+	case 10:
+		skybox_name = "sky_day02_05_hdr";
+		break;
+	case 11:
+		skybox_name = "nukeblank";
+		break;
+	case 12:
+		skybox_name = "sky_venice";
+		break;
+	case 13:
+		skybox_name = "sky_cs15_daylight03_hdr";
+		break;
+	case 14:
+		skybox_name = "sky_cs15_daylight04_hdr";
+		break;
+	case 15:
+		skybox_name = "sky_csgo_cloudy01";
+		break;
+	case 16:
+		skybox_name = "sky_csgo_night02";
+		break;
+	case 17:
+		skybox_name = "sky_csgo_night02b";
+		break;
+	case 18:
+		skybox_name = "sky_csgo_night_flat";
+		break;
+	case 19:
+		skybox_name = "sky_dust";
+		break;
+	case 20:
+		skybox_name = "vietnam";
+		break;
+	}
+
+	static auto skybox_number = 0;
+	static auto old_skybox_name = skybox_name;
+	static auto color_r = (unsigned char)255;
+	static auto color_g = (unsigned char)255;
+	static auto color_b = (unsigned char)255;
+
+
+	if (skybox_number != g_Configurations.skybox_num)
+	{
+		changed = true;
+		skybox_number = g_Configurations.skybox_num;
+	}
+	else if (old_skybox_name != skybox_name)
+	{
+		changed = true;
+		old_skybox_name = skybox_name;
+	}
+	else if (color_r != g_Configurations.skybox_color.r())
+	{
+		changed = true;
+		color_r = g_Configurations.skybox_color.r();
+	}
+	else if (color_g != g_Configurations.skybox_color.g())
+	{
+		changed = true;
+		color_g = g_Configurations.skybox_color.g();
+	}
+	else if (color_b != g_Configurations.skybox_color.b())
+	{
+		changed = true;
+		color_b = g_Configurations.skybox_color.b();
+	}
+
+	if (changed)
+	{
+		changed = false;
+		fnLoadNamedSkys(skybox_name.c_str());
+		auto materialsystem = g_MatSystem;
+
+		for (auto i = materialsystem->FirstMaterial(); i != materialsystem->InvalidMaterial(); i = materialsystem->NextMaterial(i))
+		{
+			auto material = materialsystem->GetMaterial(i);
+
+			if (!material)
+				continue;
+
+			if (strstr(material->GetTextureGroupName(), "SkyBox"))
+				material->ColorModulate(g_Configurations.skybox_color.r() / 255.f, g_Configurations.skybox_color.g() / 255.f, g_Configurations.skybox_color.b() / 255.f);
+		}
+	}
+}
+
+void NightmodeFix()
+{
+	static auto in_game = false;
+
+	if (g_EngineClient->IsInGame() && !in_game)
+	{
+		in_game = true;
+
+		g_Configurations.g_Globals.change_materials = true;
+		changed = true;
+
+		static auto skybox = g_CVar->FindVar("sv_skyname");
+		backup_skybox = skybox->GetString();
+		return;
+	}
+	else if (!g_EngineClient->IsInGame() && in_game)
+		in_game = false;
+
+	static auto setting = g_Configurations.enable_nightmode;
+
+	if (setting != g_Configurations.enable_nightmode)
+	{
+		setting = g_Configurations.enable_nightmode;
+		g_Configurations.g_Globals.change_materials = true;
+		return;
+	}
+
+	static auto setting_world = g_Configurations.nightmode_color;
+
+	if (setting_world != g_Configurations.nightmode_color)
+	{
+		setting_world = g_Configurations.nightmode_color;
+		g_Configurations.g_Globals.change_materials = true;
+		return;
+	}
+}
 namespace Hooks 
 {
 	void Initialize()
@@ -53,6 +254,11 @@ namespace Hooks
 		sv_cheats.hook_index(index::SvCheatsGetBool, hkSvCheatsGetBool);
 
 		anti_cheat_fix();
+		g_EngineClient->GetScreenSize(g_Configurations.g_Globals.SWidth, g_Configurations.g_Globals.SHeight);
+		g_Configurations.g_Globals.SWidthHalf = g_Configurations.g_Globals.SWidth / 2.f;
+		g_Configurations.g_Globals.SHeightHalf = g_Configurations.g_Globals.SHeight / 2.f;
+		LPVOID pCL_Move = Utils::PatternScan(GetModuleHandleA("engine.dll"), "55 8B EC 81 EC 64 01 00 00 53 56 8A F9");
+		CREATE_HOOK(pCL_Move, hkCL_Move, m_CL_Move);
 	}
 
 	void Shutdown()
@@ -71,7 +277,13 @@ namespace Hooks
 	
 	void __cdecl hkCL_Move(float_t flFrametime, bool bIsFinalTick)
 	{
-		
+		static DWORD spammed = 0;
+		if (GetTickCount() - spammed > 800) {
+			spammed = GetTickCount();
+
+			Utils::ConsolePrint("1\n"); 
+		}
+		m_CL_Move(flFrametime, bIsFinalTick);
 	}
 
 	long __stdcall hkEndScene(IDirect3DDevice9* pDevice)
@@ -86,9 +298,9 @@ namespace Hooks
 
 		viewmodel_fov->m_fnChangeCallbacks.m_Size = 0;
 		viewmodel_fov->SetValue(g_Configurations.viewmodel_fov);
-		mat_ambient_light_r->SetValue(g_Configurations.mat_ambient_light_r);
-		mat_ambient_light_g->SetValue(g_Configurations.mat_ambient_light_g);
-		mat_ambient_light_b->SetValue(g_Configurations.mat_ambient_light_b);
+		mat_ambient_light_r->SetValue(g_Configurations.enable_post_proc ? g_Configurations.post_processing.r() / 255.f : 0);
+		mat_ambient_light_g->SetValue(g_Configurations.enable_post_proc ? g_Configurations.post_processing.g() / 255.f : 0);
+		mat_ambient_light_b->SetValue(g_Configurations.enable_post_proc ? g_Configurations.post_processing.b() / 255.f : 0);
 		
 
 
@@ -113,9 +325,11 @@ namespace Hooks
 
 		if (g_EngineClient->IsInGame())
 		{
-			static ConVar* weapon_debug_spread_show = g_CVar->FindVar("weapon_debug_spread_show");
-			if (g_LocalPlayer->IsAlive())
+			if (g_LocalPlayer)
+			{
+				static ConVar* weapon_debug_spread_show = g_CVar->FindVar("weapon_debug_spread_show");
 				weapon_debug_spread_show->SetValue(g_Configurations.no_scope_crosshair && !g_LocalPlayer->m_bIsScoped() ? 3 : 0);
+			}
 		}
 
 		*reinterpret_cast<int*>((DWORD)&g_CVar->FindVar("viewmodel_offset_x")->m_fnChangeCallbacks + 0xC) = 0;
@@ -126,9 +340,9 @@ namespace Hooks
 		static auto viewmodel_offset_y = g_CVar->FindVar("viewmodel_offset_y");
 		static auto viewmodel_offset_z = g_CVar->FindVar("viewmodel_offset_z");
 
-		viewmodel_offset_x->SetValue(g_Configurations.viewmodel_offset_x);
-		viewmodel_offset_y->SetValue(g_Configurations.viewmodel_offset_y);
-		viewmodel_offset_z->SetValue(g_Configurations.viewmodel_offset_z);
+		viewmodel_offset_x->SetValue(g_Configurations.enable_offsets ? g_Configurations.viewmodel_offset_x : 0);
+		viewmodel_offset_y->SetValue(g_Configurations.enable_offsets ? g_Configurations.viewmodel_offset_y : 0);
+		viewmodel_offset_z->SetValue(g_Configurations.enable_offsets ? g_Configurations.viewmodel_offset_z : 0);
 
 		DWORD colorwrite, srgbwrite;
 		IDirect3DVertexDeclaration9* vert_dec = nullptr;
@@ -157,7 +371,7 @@ namespace Hooks
 		auto esp_drawlist = Render::Get().RenderScene();
 
 		Menu::Get().Render();
-	
+		g_KeyBinds->ExecuteKeyBinds();
 		ImGui::Render(esp_drawlist);
 
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
@@ -198,19 +412,31 @@ namespace Hooks
 		if (!cmd || !cmd->command_number)
 			return;
 		
+		if (cmd->buttons & IN_ATTACK && g_LocalPlayer->m_hActiveWeapon()->m_iItemDefinitionIndex() != WEAPON_REVOLVER)
+		{
+		//	g_Configurations.g_Globals.last_shoot_position = g_LocalPlayer->GetEyePos();
+		}
+
 		if (Menu::Get().IsVisible())
 			cmd->buttons &= ~IN_ATTACK;
-
 		if (g_Configurations.misc_bhop)
 			BunnyHop::OnCreateMove(cmd);
+		
 
 		if (g_Configurations.misc_showranks && cmd->buttons & IN_SCORE)
 			g_CHLClient->DispatchUserMessage(CS_UM_ServerRankRevealAll, 0, 0, nullptr);
-
+		
 		Misc::Get().QuickReload(cmd);
 		Engine_Prediction::Get().Begin(cmd);
-		{
-				Misc::Get().AutoStrafe(cmd);
+		{	
+			
+		    Misc::Get().MouseCorrection(cmd);
+			g_Aimbot.OnMove(cmd, (bool*)bSendPacket);
+	     	g_Backtrack->CMove(cmd);
+			Misc::Get().AutoStrafe(cmd);
+			Misc::Get().FastStop(cmd);
+			Misc::Get().EdgeJump(cmd);
+			
 
 			if (g_Configurations.esp_grenade_prediction)
 				Grenade_Pred::Get().Trace(cmd);
@@ -258,7 +484,7 @@ namespace Hooks
 				panelId = panel;
 			}
 		}
-		else if (panelId == panel) 
+		else if (panelId == panel)
 		{
 			static bool bSkip = false;
 			bSkip = !bSkip;
@@ -266,6 +492,7 @@ namespace Hooks
 			if (bSkip)
 				return;
 
+			NightmodeFix();
 			Render::Get().BeginScene();
 		}
 	}
@@ -339,6 +566,30 @@ namespace Hooks
 					aim_punch = QAngle{};
 					view_punch = QAngle{};
 				}
+				static auto r_drawspecificstaticprop =g_CVar->FindVar("r_drawspecificstaticprop");
+				*(int*)((DWORD)&r_drawspecificstaticprop->m_fnChangeCallbacks + 0xC) = 0;
+				if (r_drawspecificstaticprop->GetBool())
+					r_drawspecificstaticprop->SetValue(FALSE);
+
+				if (g_Configurations.g_Globals.change_materials)
+				{
+					if (g_Configurations.enable_nightmode)
+						nightmode::Get().apply();
+					else
+						nightmode::Get().remove();
+
+					g_Configurations.g_Globals.change_materials = false;
+				}
+				nightmode::Get().asus();
+				nightmode::Get().apply();
+
+				skybox_changer();
+				fog_changer();
+				
+				static auto cl_foot_contact_shadows = g_CVar->FindVar("cl_foot_contact_shadows"); 
+
+				if (cl_foot_contact_shadows->GetBool())
+					cl_foot_contact_shadows->SetValue(FALSE);
 			}
 		}
 		ofunc(g_CHLClient, edx, stage);
@@ -347,6 +598,8 @@ namespace Hooks
 	void __fastcall hkOverrideView(void* _this, int edx, CViewSetup* vsView)
 	{
 		static auto ofunc = clientmode_hook.get_original<decltype(&hkOverrideView)>(index::OverrideView);
+
+		g_Configurations.g_Globals.OFOV = vsView->fov;
 
 		if (g_EngineClient->IsInGame() && vsView)
 		{
@@ -361,7 +614,8 @@ namespace Hooks
 			if (viewmodel)
 			{
 				auto eyeAng = vsView->angles;
-				eyeAng.z -= (float)g_Configurations.viewmodel_offset_roll;
+				
+				eyeAng.z -= g_Configurations.enable_offsets ? (float)g_Configurations.viewmodel_offset_roll : 0;
 
 				viewmodel->SetAbsAngles(eyeAng);
 

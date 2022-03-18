@@ -2,10 +2,119 @@
 
 #include "../configurations.hpp"
 #include "../sdk/utils/math.hpp"
-
-void Misc::AutoStrafe(CUserCmd* cmd)
+void Misc::EdgeJump(CUserCmd* pCmd)
 {
-	if (g_LocalPlayer->m_nMoveType() == MOVETYPE_LADDER)
+	if (g_Configurations.edge_jump)
+	{
+		if ((g_LocalPlayer->m_fFlags() & FL_ONGROUND) && !(g_LocalPlayer->m_fFlags() & FL_ONGROUND))
+			pCmd->buttons |= IN_JUMP;
+	}
+}
+
+void Misc::MouseCorrection(CUserCmd* pCmd)
+{
+	QAngle angOldViewAngles;
+	g_EngineClient->GetViewAngles(&angOldViewAngles);
+
+	float delta_x = std::remainderf(pCmd->viewangles.pitch- angOldViewAngles.pitch, 360.0f);
+	float delta_y = std::remainderf(pCmd->viewangles.pitch - angOldViewAngles.yaw - angOldViewAngles.yaw, 360.0f);
+
+	if (delta_x != 0.0f)
+	{
+		float mouse_y = -((delta_x / g_CVar->FindVar("m_pitch")->GetFloat()) / g_CVar->FindVar("sensitivity")->GetFloat());
+		short mousedy;
+		if (mouse_y <= 32767.0f) {
+			if (mouse_y >= -32768.0f) {
+				if (mouse_y >= 1.0f || mouse_y < 0.0f) {
+					if (mouse_y <= -1.0f || mouse_y > 0.0f)
+						mousedy = static_cast<short>(mouse_y);
+					else
+						mousedy = -1;
+				}
+				else {
+					mousedy = 1;
+				}
+			}
+			else {
+				mousedy = 0x8000u;
+			}
+		}
+		else {
+			mousedy = 0x7FFF;
+		}
+
+		pCmd->mousedy = mousedy;
+	}
+
+	if (delta_y != 0.0f)
+	{
+		float mouse_x = -((delta_y / g_CVar->FindVar("m_yaw")->GetFloat()) / g_CVar->FindVar("sensitivity")->GetFloat());
+		short mousedx;
+		if (mouse_x <= 32767.0f) {
+			if (mouse_x >= -32768.0f) {
+				if (mouse_x >= 1.0f || mouse_x < 0.0f) {
+					if (mouse_x <= -1.0f || mouse_x > 0.0f)
+						mousedx = static_cast<short>(mouse_x);
+					else
+						mousedx = -1;
+				}
+				else {
+					mousedx = 1;
+				}
+			}
+			else {
+				mousedx = 0x8000u;
+			}
+		}
+		else {
+			mousedx = 0x7FFF;
+		}
+
+		pCmd->mousedx = mousedx;
+	}
+}
+void Misc::FastStop(CUserCmd* pCmd)
+{
+	if (!g_Configurations.fast_stop)
+		return;
+
+	if (!g_LocalPlayer)
+		return;
+
+	if (!g_LocalPlayer->IsAlive())
+		return;
+
+	if (g_LocalPlayer->m_nMoveType() == MOVETYPE_LADDER || g_LocalPlayer->m_nMoveType() == MOVETYPE_NOCLIP)
+		return;
+
+	if (pCmd->buttons & (IN_JUMP | IN_MOVELEFT | IN_MOVERIGHT | IN_FORWARD | IN_BACK))
+		return;
+
+	if (!(g_LocalPlayer->m_fFlags() & FL_ONGROUND))
+		return;
+
+	if (g_LocalPlayer->m_vecVelocity().Length2D() <= g_LocalPlayer->m_flMaxspeed() * 0.34f)
+	{
+		pCmd->forwardmove = pCmd->sidemove = 0.0f;
+		return;
+	}
+
+	QAngle angResistance = QAngle(0, 0, 0);
+	Math::VectorAngles((g_LocalPlayer->m_vecVelocity() * -1.f), angResistance);
+
+	angResistance.yaw = pCmd->viewangles.yaw - angResistance.yaw;
+	angResistance.pitch = pCmd->viewangles.pitch - angResistance.pitch;
+
+	Vector vecResistance = Vector(0, 0, 0);
+	Math::AngleVectors(angResistance, vecResistance);
+
+	pCmd->forwardmove =Math::clamp(vecResistance.x, -450.f, 450.0f);
+	pCmd->sidemove = Math::clamp(vecResistance.y, -450.f, 450.0f);
+}
+
+void Misc::AutoStrafe(CUserCmd* pCmd)
+{
+	if (g_LocalPlayer->m_nMoveType() == MOVETYPE_LADDER || g_LocalPlayer->m_nMoveType() == MOVETYPE_NOCLIP)
 		return;
 
 	if (g_LocalPlayer->m_fFlags() & FL_ONGROUND)
@@ -16,182 +125,117 @@ void Misc::AutoStrafe(CUserCmd* cmd)
 
 	if (g_Configurations.misc_autostrafe)
 	{
-		static auto old_yaw = 0.0f;
-
-		auto get_velocity_degree = [](float velocity)
+		if (g_LocalPlayer->m_vecVelocity().Length2D() <= 5.0f)
 		{
-			auto tmp = RAD2DEG(atan(30.0f / velocity));
-
-			if (CheckIfNonValidNumber(tmp) || tmp > 90.0f)
-				return 90.0f;
-
-			else if (tmp < 0.0f)
-				return 0.0f;
-			else
-				return tmp;
-		};
-
-		if (g_LocalPlayer->m_nMoveType() != MOVETYPE_WALK)
-			return;
-
-		auto velocity = g_LocalPlayer->m_vecVelocity();
-		velocity.z = 0.0f;
-
-		auto forwardmove = cmd->forwardmove;
-		auto sidemove = cmd->sidemove;
-
-		if (velocity.Length2D() < 5.0f && !forwardmove && !sidemove)
-			return;
-
-		static auto flip = false;
-		flip = !flip;
-
-		auto turn_direction_modifier = flip ? 1.0f : -1.0f;
-		auto viewangles = cmd->viewangles;
-
-		if (forwardmove || sidemove)
-		{
-			cmd->forwardmove = 0.0f;
-			cmd->sidemove = 0.0f;
-
-			auto turn_angle = atan2(-sidemove, forwardmove);
-			viewangles.yaw += turn_angle * M_RADPI;
-		}
-		else if (forwardmove)
-			cmd->forwardmove = 0.0f;
-
-		auto strafe_angle = RAD2DEG(atan(15.0f / velocity.Length2D()));
-
-		if (strafe_angle > 90.0f)
-			strafe_angle = 90.0f;
-		else if (strafe_angle < 0.0f)
-			strafe_angle = 0.0f;
-
-		auto temp = Vector(0.0f, viewangles.yaw - old_yaw, 0.0f);
-		temp.y = Math::NormalizeYaw(temp.y);
-
-		auto yaw_delta = temp.y;
-		old_yaw = viewangles.yaw;
-
-		auto abs_yaw_delta = fabs(yaw_delta);
-
-		if (abs_yaw_delta <= strafe_angle || abs_yaw_delta >= 30.0f)
-		{
-			QAngle velocity_angles;
-			Math::VectorAngles(velocity, velocity_angles);
-
-			temp = Vector(0.0f, viewangles.yaw - velocity_angles.yaw, 0.0f);
-			temp.y = Math::NormalizeYaw(temp.y);
-
-			auto velocityangle_yawdelta = temp.y;
-			auto velocity_degree = get_velocity_degree(velocity.Length2D());
-
-			if (velocityangle_yawdelta <= velocity_degree || velocity.Length2D() <= 15.0f)
+			C_BaseCombatWeapon* pCombatWeapon = g_LocalPlayer->m_hActiveWeapon().Get();
+			if (pCombatWeapon)
 			{
-				if (-velocity_degree <= velocityangle_yawdelta || velocity.Length2D() <= 15.0f)
+				if (pCombatWeapon->m_iItemDefinitionIndex() != WEAPON_SSG08)
 				{
-					viewangles.yaw += strafe_angle * turn_direction_modifier;
-					cmd->sidemove = side_speed * turn_direction_modifier;
+					if (!g_Configurations.misc_boostspeed)
+						return;
+				}
+				else
+					return;
+			}
+		}
+
+		if (!g_Configurations.misc_wasdstrafes)
+		{
+			pCmd->forwardmove = (10000.f / g_LocalPlayer->m_vecVelocity().Length2D() > 450.f) ? 450.f : 10000.f / g_LocalPlayer->m_vecVelocity().Length2D();
+			pCmd->sidemove = (pCmd->mousedx != 0) ? (pCmd->mousedx < 0.0f) ? -450.f : 450.f : (pCmd->command_number & 1) ? -450.f : 450.f;
+
+			return;
+		}
+
+		static bool bFlip = true;
+		static float flOldYaw = pCmd->viewangles.yaw;
+
+		Vector vecVelocity = g_LocalPlayer->m_vecVelocity();
+		vecVelocity.z = 0.0f;
+
+		float_t flForwardMove = pCmd->forwardmove;
+		float_t flSideMove = pCmd->sidemove;
+
+		float flTurnVelocityModifier = bFlip ? 1.5f : -1.5f;
+		QAngle angViewAngles = pCmd->viewangles;
+
+		if (flForwardMove || flSideMove)
+		{
+			pCmd->forwardmove = 0.0f;
+			pCmd->sidemove = 0.0f;
+
+			float m_flTurnAngle = atan2(-flSideMove, flForwardMove);
+			angViewAngles.yaw += m_flTurnAngle * M_RADPI;
+		}
+		else if (flForwardMove)
+			pCmd->forwardmove = 0.0f;
+
+		float flStrafeAngle = RAD2DEG(atan(15.0f / vecVelocity.Length2D()));
+		if (flStrafeAngle > 90.0f)
+			flStrafeAngle = 90.0f;
+		else if (flStrafeAngle < 0.0f)
+			flStrafeAngle = 0.0f;
+
+		Vector vecTemp = Vector(0.0f, angViewAngles.yaw - flOldYaw, 0.0f);
+		vecTemp.y = Math::NormalizeAngle(vecTemp.y);
+		flOldYaw = angViewAngles.yaw;
+
+		float flYawDelta = vecTemp.y;
+		float flAbsYawDelta = fabs(flYawDelta);
+		if (flAbsYawDelta <= flStrafeAngle || flAbsYawDelta >= 30.0f)
+		{
+			QAngle angVelocityAngle;
+			Math::VectorAngles(vecVelocity, angVelocityAngle);
+
+			vecTemp = Vector(0.0f, angViewAngles.yaw - angVelocityAngle.yaw, 0.0f);
+			vecTemp.y = Math::NormalizeAngle(vecTemp.y);
+
+			float flVelocityAngleYawDelta = vecTemp.y;
+			float flVelocityDegree = Math::clamp(RAD2DEG(atan(30.0f / vecVelocity.Length2D())), 0.0f, 90.0f) * 0.01f;
+
+			if (flVelocityAngleYawDelta <= flVelocityDegree || vecVelocity.Length2D() <= 15.0f)
+			{
+				if (-flVelocityDegree <= flVelocityAngleYawDelta || vecVelocity.Length2D() <= 15.0f)
+				{
+					angViewAngles.yaw += flStrafeAngle * flTurnVelocityModifier;
+					pCmd->sidemove = 450.0f * flTurnVelocityModifier;
 				}
 				else
 				{
-					viewangles.yaw = velocity_angles.yaw - velocity_degree;
-					cmd->sidemove = side_speed;
+					angViewAngles.yaw = angVelocityAngle.yaw - flVelocityDegree;
+					pCmd->sidemove = 450.0f;
 				}
 			}
 			else
 			{
-				viewangles.yaw = velocity_angles.yaw + velocity_degree;
-				cmd->sidemove = -side_speed;
+				angViewAngles.yaw = angVelocityAngle.yaw + flVelocityDegree;
+				pCmd->sidemove = -450.0f;
 			}
 		}
-		else if (yaw_delta > 0.0f)
-			cmd->sidemove = -side_speed;
-		else if (yaw_delta < 0.0f)
-			cmd->sidemove = side_speed;
+		else if (flYawDelta > 0.0f)
+			pCmd->sidemove = 450.0f;
+		else if (flYawDelta < 0.0f)
+			pCmd->sidemove = 450.0f;
 
-		auto move = Vector(cmd->forwardmove, cmd->sidemove, 0.0f);
-		auto speed = move.Length();
+		Vector vecMove = Vector(pCmd->forwardmove, pCmd->sidemove, 0.0f);
+		float flSpeed = vecMove.Length();
 
-		QAngle angles_move;
-		Math::VectorAngles(move, angles_move);
+		QAngle angMoveAngle;
+		Math::VectorAngles(vecMove, angMoveAngle);
 
-		auto normalized_x = fmod(cmd->viewangles.pitch + 180.0f, 360.0f) - 180.0f;
-		auto normalized_y = fmod(cmd->viewangles.yaw + 180.0f, 360.0f) - 180.0f;
+		float flNormalizedX = fmod(pCmd->viewangles.pitch + 180.0f, 360.0f) - 180.0f;
+		float flNormalizedY = fmod(pCmd->viewangles.yaw + 180.0f, 360.0f) - 180.0f;
+		float flYaw = DEG2RAD((flNormalizedY - angViewAngles.yaw) + angMoveAngle.yaw);
 
-		auto yaw = DEG2RAD(normalized_y - viewangles.yaw + angles_move.yaw);
-
-		if (normalized_x >= 90.0f || normalized_x <= -90.0f || cmd->viewangles.pitch >= 90.0f && cmd->viewangles.pitch <= 200.0f ||
-			cmd->viewangles.pitch <= -90.0f && cmd->viewangles.pitch <= 200.0f)
-			cmd->forwardmove = -cos(yaw) * speed;
+		if (pCmd->viewangles.pitch <= 200.0f && (flNormalizedX >= 90.0f || flNormalizedX <= -90.0f || (pCmd->viewangles.pitch >= 90.0f && pCmd->viewangles.pitch <= 200.0f) || pCmd->viewangles.pitch <= -90.0f))
+			pCmd->forwardmove = -cos(flYaw) * flSpeed;
 		else
-			cmd->forwardmove = cos(yaw) * speed;
+			pCmd->forwardmove = cos(flYaw) * flSpeed;
 
-		cmd->sidemove = sin(yaw) * speed;
-	}
-	if (g_Configurations.misc_autostrafe_legit)
-	{
-		if (!g_InputSystem->IsButtonDown(ButtonCode_t::KEY_SPACE) ||
-			g_InputSystem->IsButtonDown(ButtonCode_t::KEY_A) ||
-			g_InputSystem->IsButtonDown(ButtonCode_t::KEY_D) ||
-			g_InputSystem->IsButtonDown(ButtonCode_t::KEY_S) ||
-			g_InputSystem->IsButtonDown(ButtonCode_t::KEY_W))
-			return;
+		pCmd->sidemove = sin(flYaw) * flSpeed;
 
-		bool on_ground = (g_LocalPlayer->m_fFlags() & FL_ONGROUND) && !(cmd->buttons & IN_JUMP);
-		if (on_ground) {
-			return;
-		}
-
-		static auto side = 1.0f;
-		side = -side;
-
-		auto velocity = g_LocalPlayer->m_vecVelocity();
-		velocity.z = 0.0f;
-
-		QAngle wish_angle = cmd->viewangles;
-
-		auto speed = velocity.Length2D();
-		auto ideal_strafe =Math::clamp(RAD2DEG(atan(15.f / speed)), 0.0f, 90.0f);
-
-		if (cmd->forwardmove > 0.0f)
-			cmd->forwardmove = 0.0f;
-
-		static auto cl_sidespeed = g_CVar->FindVar("cl_sidespeed");
-
-		static float old_yaw = 0.f;
-		auto yaw_delta = std::remainderf(wish_angle.yaw - old_yaw, 360.0f);
-		auto abs_angle_delta = abs(yaw_delta);
-		old_yaw = wish_angle.yaw;
-
-		if (abs_angle_delta <= ideal_strafe || abs_angle_delta >= 30.0f) {
-			QAngle velocity_direction;
-			Math::VectorAngles(velocity, velocity_direction);
-			auto velocity_delta = std::remainderf(wish_angle.yaw - velocity_direction.yaw, 360.0f);
-			auto retrack = Math::clamp(RAD2DEG(atan(30.0f / speed)), 0.0f, 90.0f) * g_Configurations.retrack;
-			if (velocity_delta <= retrack || speed <= 15.0f) {
-				if (-(retrack) <= velocity_delta || speed <= 15.0f) {
-					wish_angle.yaw += side * ideal_strafe;
-					cmd->sidemove = cl_sidespeed->GetFloat() * side;
-				}
-				else {
-					wish_angle.yaw = velocity_direction.yaw - retrack;
-					cmd->sidemove = cl_sidespeed->GetFloat();
-				}
-			}
-			else {
-				wish_angle.yaw = velocity_direction.yaw + retrack;
-				cmd->sidemove = -cl_sidespeed->GetFloat();
-			}
-
-			Math::MovementFix(cmd, wish_angle, cmd->viewangles);
-		}
-		else if (yaw_delta > 0.0f) {
-			cmd->sidemove = -cl_sidespeed->GetFloat();
-		}
-		else if (yaw_delta < 0.0f) {
-			cmd->sidemove = cl_sidespeed->GetFloat();
-		}
+		bFlip = !bFlip;
 	}
 }
 

@@ -4,12 +4,13 @@
 #include "sdk/sdk.hpp"
 #include "sdk/utils/utils.hpp"
 #include "sdk/utils/input.hpp"
-
+#include "config.hpp"
 #include "hooks.hpp"
 #include "render/menu.hpp"
 #include "configurations.hpp"
 #include "render/render.hpp"
 #include "../csgo_sdk/functions/events.hpp"
+#include "minhook/minhook.h"
 
 DWORD WINAPI OnDllAttach(LPVOID base)
 {
@@ -31,12 +32,9 @@ DWORD WINAPI OnDllAttach(LPVOID base)
         InputSys::Get().Initialize();
 		Render::Get().Initialize();
         Menu::Get().Initialize();
-
+        g_Config->SetupValues();
         Hooks::Initialize();
         HookedEvents.RegisterSelf();
-        InputSys::Get().RegisterHotkey(VK_DELETE, [base]() {
-            g_Unload = true;
-        });
 
         InputSys::Get().RegisterHotkey(VK_INSERT, [base]() {
             Menu::Get().Toggle();

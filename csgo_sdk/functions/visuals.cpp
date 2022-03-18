@@ -9,6 +9,7 @@
 #include "../functions/damage_indicator.h"
 #include "../imgui/imgui.h"
 
+
 RECT GetBBox(C_BaseEntity* ent)
 {
 	RECT rect{};
@@ -83,9 +84,11 @@ void Visuals::Render()
 
 }
 
+
+
 bool Visuals::Player::Begin(C_BasePlayer* pl)
 {
-	if (pl->IsDormant() || !pl->IsAlive())
+	if (!pl->IsAlive())
 		return false;
 
 	ctx.pl = pl;
@@ -101,12 +104,12 @@ bool Visuals::Player::Begin(C_BasePlayer* pl)
 	auto origin = pl->m_vecOrigin();
 
 	head.z += 15;
-
-	if (!Math::WorldToScreen(head, ctx.head_pos) || !Math::WorldToScreen(origin, ctx.feet_pos))
+	auto head2 = pl->GetHitboxPos(HITBOX_HEAD);
+	if (!Math::WorldToScreen(head, ctx.head_pos) || !Math::WorldToScreen(origin, ctx.feet_pos) || !Math::WorldToScreen(head2, ctx.head_pos_def))
 		return false;
 
 	auto h = fabs(ctx.head_pos.y - ctx.feet_pos.y);
-	auto w = h / 1.65f;
+	auto w = h / 2.f;
 
 	ctx.bbox.left = static_cast<long>(ctx.feet_pos.x - w * 0.5f);
 	ctx.bbox.right = static_cast<long>(ctx.bbox.left + w);
@@ -118,9 +121,16 @@ bool Visuals::Player::Begin(C_BasePlayer* pl)
 
 void Visuals::Player::RenderBox() 
 {
-	Render::Get().RenderBoxByType(ctx.bbox.left, ctx.bbox.top, ctx.bbox.right, ctx.bbox.bottom, ctx.clr, 1);
-	Render::Get().RenderBoxByType(ctx.bbox.left + 1, ctx.bbox.top + 1, ctx.bbox.right - 1, ctx.bbox.bottom - 1, Color::Black, 1);
-	Render::Get().RenderBoxByType(ctx.bbox.left - 1, ctx.bbox.top - 1, ctx.bbox.right + 1, ctx.bbox.bottom + 1, Color::Black, 1);
+	if (g_Configurations.esp_box_filled)
+	{
+		if (!g_Configurations.esp_box_filled_gradient)
+			Render::Get().RenderBoxFilled(ctx.bbox.left, ctx.bbox.top, ctx.bbox.right, ctx.bbox.bottom, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : ctx.clr, 1);
+		else
+			Render::Get().RenderBoxGradient(ctx.bbox.left, ctx.bbox.top, ctx.bbox.right, ctx.bbox.bottom, Color(0, 0, 0, 0), ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.box_gradient_color, 1);
+	}
+	Render::Get().RenderBoxByType(ctx.bbox.left, ctx.bbox.top, ctx.bbox.right, ctx.bbox.bottom, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : ctx.clr, 1);
+	Render::Get().RenderBoxByType(ctx.bbox.left + 1, ctx.bbox.top + 1, ctx.bbox.right - 1, ctx.bbox.bottom - 1, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(0,0,0, 84) : Color(0, 0, 0, 0) : Color::Black, 1);
+	Render::Get().RenderBoxByType(ctx.bbox.left - 1, ctx.bbox.top - 1, ctx.bbox.right + 1, ctx.bbox.bottom + 1, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(0,0,0, 84) : Color(0, 0, 0, 0) : Color::Black, 1);
 }
 
 void Visuals::Player::RenderName()
@@ -129,7 +139,7 @@ void Visuals::Player::RenderName()
 
 	auto sz = g_pDefaultFont->CalcTextSizeA(14.f, FLT_MAX, 0.0f, info.szName);
 
-	Render::Get().RenderText(info.szName, ctx.feet_pos.x - sz.x / 2, ctx.head_pos.y - sz.y, 14.f,  ctx.clr);
+	Render::Get().RenderText(info.szName, ctx.feet_pos.x - sz.x / 2, ctx.head_pos.y - sz.y, 14.f, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.esp_names_color);
 }
 
 void Visuals::Player::RenderHealth()
@@ -148,8 +158,39 @@ void Visuals::Player::RenderHealth()
 	int w = 4;
 	int h = box_h;
 
+	if (!g_Configurations.health_background)
 	Render::Get().RenderBox(x, y, x + w, y + h, Color::Black, 1.f, true);
-	Render::Get().RenderBox(x + 1, y + 1, x + w - 1, y + height - 2, Color(red, green, 0, 255), 1.f, true);
+	else
+	{
+		if (g_Configurations.health_background_gradient)
+		{
+			Render::Get().RenderBoxGradient(x + 1, y + 1, x + w - 1, y + h - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.health_background_color, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.health_background_second, 1.f, true);
+		}
+		else
+		{
+			Render::Get().RenderBoxFilled(x + 1, y + 1, x + w - 1, y + h - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.health_background_color, 1.f, true);
+		}
+	}
+
+	if (!g_Configurations.health_based_on_health)
+	Render::Get().RenderBoxFilled(x + 1, y + 1, x + w - 1, y + height - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : Color(red, green, 0, 255), 1.f, true);
+	else
+	{
+		if (!g_Configurations.health_gradient)
+		{
+			Render::Get().RenderBoxFilled(x + 1, y + 1, x + w - 1, y + height - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.health_color, 1.f, true);
+		}
+		else
+		{
+			Render::Get().RenderBoxGradient(x + 1, y + 1, x + w - 1, y + height - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.health_color, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.health_second_color, 1.f, true);
+		}
+	}
+}
+
+void Visuals::Player::DrawHeadDot() {
+	Render::Get().RenderBox(ctx.head_pos_def.x - 2, ctx.head_pos_def.y - 2, ctx.head_pos_def.x + 2, ctx.head_pos_def.y + 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.head_dot_color);
+	Render::Get().RenderBox(ctx.head_pos_def.x - 1, ctx.head_pos_def.y - 1, ctx.head_pos_def.x + 1, ctx.head_pos_def.y + 1, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(0, 0, 0, 84) : Color(0, 0, 0, 0) : Color::Black);
+	Render::Get().RenderBox(ctx.head_pos_def.x - 3, ctx.head_pos_def.y - 3, ctx.head_pos_def.x + 3, ctx.head_pos_def.y + 3, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(0,0,0, 84) : Color(0, 0, 0, 0) : Color::Black);
 }
 
 void Visuals::Player::RenderArmour()
@@ -164,9 +205,26 @@ void Visuals::Player::RenderArmour()
 	int y = ctx.bbox.top;
 	int w = 4;
 	int h = box_h;
-
+	if (!g_Configurations.armour_background)
 	Render::Get().RenderBox(x, y, x + w, y + h, Color::Black, 1.f, true);
-	Render::Get().RenderBox(x + 1, y + 1, x + w - 1, y + height - 2, Color(0, 50, 255, 255), 1.f, true);
+	else
+	{
+		if (g_Configurations.armour_background_gradient)
+		{
+			Render::Get().RenderBoxGradient(x + 1, y + 1, x + w - 1, y + h - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.armour_background_color, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.armour_background_second, 1.f, true);
+		}
+		else
+		{
+			Render::Get().RenderBoxFilled(x + 1, y + 1, x + w - 1, y + h - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.armour_background_color, 1.f, true);
+		}
+	}
+
+	if (!g_Configurations.armour_gradient)
+	Render::Get().RenderBox(x + 1, y + 1, x + w - 1, y + height - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.armour_color, 1.f, true);
+	else
+	{
+		Render::Get().RenderBoxGradient(x + 1, y + 1, x + w - 1, y + height - 2, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.armour_color, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : g_Configurations.armour_second_color, 1.f, true);
+	}
 }
 
 void Visuals::Player::RenderWeaponName()
@@ -176,7 +234,10 @@ void Visuals::Player::RenderWeaponName()
 	if (!weapon)
 		return;
 
-	Render::Get().RenderText(weapon->get_name().c_str(), ctx.feet_pos.x, ctx.feet_pos.y, 14.f, ctx.clr, true, g_pDefaultFont);
+	//if (ctx.pl->IsDormant())
+
+
+	Render::Get().RenderText(weapon->get_name().c_str(), ctx.feet_pos.x, ctx.feet_pos.y, 14.f, ctx.pl->IsDormant()? g_Configurations.dormant_esp? Color(255,255,255,84) : Color(0,0,0,0) : g_Configurations.esp_weapon_color, true, g_pDefaultFont);
 }
 
 void Visuals::Player::RenderSnapline()
@@ -186,7 +247,7 @@ void Visuals::Player::RenderSnapline()
 	g_EngineClient->GetScreenSize(screen_w, screen_h);
 
 	Render::Get().RenderLine(screen_w / 2.f, (float)screen_h,
-		ctx.feet_pos.x, ctx.feet_pos.y, ctx.clr);
+		ctx.feet_pos.x, ctx.feet_pos.y, ctx.pl->IsDormant() ? g_Configurations.dormant_esp ? Color(255, 255, 255, 84) : Color(0, 0, 0, 0) : ctx.clr);
 }
 
 
@@ -321,54 +382,179 @@ void Visuals::RenderItemEsp(C_BaseEntity* ent)
 
 	Render::Get().RenderText(itemstr, ImVec2((bbox.left + w * 0.5f) - sz.x * 0.5f, bbox.bottom + 1), 14.f, g_Configurations.color_esp_item);
 }
+void Thirdperson_Init(bool fakeducking, float progress) {
 
+	static float current_fraction = 0.0f;
+
+	auto distance = ((float)g_Configurations.misc_thirdperson_dist) * progress;
+
+	QAngle angles;
+	QAngle inverse_angles;
+	g_EngineClient->GetViewAngles(&angles);
+	g_EngineClient->GetViewAngles(&inverse_angles);
+
+
+	inverse_angles.roll = distance;
+
+	Vector forward, right, up;
+	
+	Math::AngleVectors(inverse_angles, forward, right, up);
+
+	auto eye_pos = fakeducking ? g_LocalPlayer->GetAbsOrigin() + g_GameMovement->GetPlayerViewOffset(false) : g_LocalPlayer->GetAbsOrigin() + g_LocalPlayer->m_vecViewOffset();
+
+	auto offset = eye_pos + forward * -distance + right + up;
+
+	CTraceFilterWorldOnly filter;
+	trace_t tr;
+	g_EngineTrace->TraceRay(Ray_t(eye_pos, offset, Vector(-16.0f, -16.0f, -16.0f), Vector(16.0f, 16.0f, 16.0f)), 131083, &filter, &tr);
+
+	if (current_fraction > tr.fraction)
+
+		current_fraction = tr.fraction;
+
+	else if (current_fraction > 0.9999f)
+
+		current_fraction = 1.0f;
+
+	current_fraction = Math::Interpolate(current_fraction, tr.fraction, g_GlobalVars->frametime * 10.0f);
+	angles.roll = distance * current_fraction;
+}
 void Visuals::ThirdPerson() 
 {
+	/*
+	static auto in_thirdperson = false;
+
+	static bool down = false;
+	static bool clicked = false;
+
+	static bool pressed = third_person_pressed;
+	if (!g_LocalPlayer || !g_EngineTrace || !g_Input || !g_Configurations.misc_thirdperson)
+	{
+		g_Configurations.g_Globals.InThirdPerson = false;
+		in_thirdperson = false;
+
+		down = false;
+		clicked = false;
+		return;
+	}
+
+	if (third_person_pressed != pressed)
+	{
+		pressed = third_person_pressed;
+		g_Configurations.g_Globals.InThirdPerson = !g_Configurations.g_Globals.InThirdPerson;
+		in_thirdperson = !in_thirdperson;
+	}
+	
+
+//	if (clicked) in_thirdperson = !in_thirdperson;
+
+	static const auto cam_idealdist = g_CVar->FindVar("cam_idealdist");
+	static const auto cam_collision = g_CVar->FindVar("cam_collision");
+
+	if (!g_EngineClient->IsInGame() || !g_LocalPlayer) return;
+
+	static auto percent = 0.f;
+	
+	
+	if (g_LocalPlayer->IsAlive() && in_thirdperson) {
+		
+		
+
+		g_Input->m_fCameraInThirdPerson = true;
+
+		percent = std::clamp(percent + g_GlobalVars->frametime * 3.f, 0.3f, 1.f);
+		cam_idealdist->SetValue(g_Configurations.misc_thirdperson_dist * percent);
+		cam_collision->SetValue(1);
+	}
+	else if (g_Input->m_fCameraInThirdPerson) {
+		percent = std::clamp(percent - g_GlobalVars->frametime * 3.f, 0.3f, 1.f);
+
+		cam_idealdist->SetValue(g_Configurations.misc_thirdperson_dist * percent);
+		cam_collision->SetValue(0);
+		if (percent <= 0.3f) {
+			g_Input->m_fCameraInThirdPerson = false;
+		}
+	}
+	*/
+
+	
+
+	static float progress;
+	static bool in_transition;
+	static auto in_thirdperson = false;
+	static bool pressed = third_person_pressed;
+	if (!g_LocalPlayer || !g_EngineTrace || !g_Input || !g_Configurations.misc_thirdperson)
+	{
+		g_Configurations.g_Globals.InThirdPerson = false;
+		in_thirdperson = false;
+		return;
+	}
+
+	if (third_person_pressed != pressed)
+	{
+		pressed = third_person_pressed;
+		g_Configurations.g_Globals.InThirdPerson = !g_Configurations.g_Globals.InThirdPerson;
+		in_thirdperson = !in_thirdperson;
+	}
+
+	if (g_LocalPlayer->IsAlive() && in_thirdperson)
+	{
+		in_transition = false;
+		if (!g_Input->m_fCameraInThirdPerson)
+		{
+			g_Input->m_fCameraInThirdPerson = true;
+		}
+	}
+	else
+	{
+		progress -= g_GlobalVars->frametime * 8.f + (progress / 100);
+		progress = std::clamp(progress, 0.f, 1.f);
+		if (!progress)
+			g_Input->m_fCameraInThirdPerson = false;
+		else
+		{
+			in_transition = true;
+			g_Input->m_fCameraInThirdPerson = true;
+		}
+	}
+	if (g_Input->m_fCameraInThirdPerson && !in_transition)
+	{
+		progress += g_GlobalVars->frametime * 8.f + (progress / 100);
+		progress = std::clamp(progress, 0.f, 1.f);
+	}
+	Thirdperson_Init(false, progress);
+
+}
+void Visuals::ShowFov() {
+	if (!g_Configurations.draw_aim_fov) return;
+	static int fov, silent_fov;
+	static bool silent_enable = false;
+
+	float fov_fix = g_Configurations.g_Globals.OFOV >= 90.f ? (g_Configurations.g_Globals.SHeight / (80.f * g_Configurations.g_Globals.OFOV / 90.f) / (g_Configurations.g_Globals.OFOV / 90.f)) : (g_Configurations.g_Globals.SHeight / (80.f * g_Configurations.g_Globals.OFOV / 90.f) / (g_Configurations.g_Globals.OFOV / 80.f) * (g_Configurations.g_Globals.OFOV / 80.f));
+
 	if (!g_LocalPlayer)
 		return;
 
-	if (g_Configurations.misc_thirdperson && g_LocalPlayer->IsAlive())
-	{
-		if (!g_Input->m_fCameraInThirdPerson)
-			g_Input->m_fCameraInThirdPerson = true;
+	auto wpn = g_LocalPlayer->m_hActiveWeapon();
+	if (!wpn)
+		return;
 
-		float dist = g_Configurations.misc_thirdperson_dist;
+	short weapon = wpn.Get()->m_Item().m_iItemDefinitionIndex();
 
-		QAngle *view = g_LocalPlayer->GetVAngles();
-		trace_t tr;
-		Ray_t ray;
+	auto setts = *g_CustomWeaponGroups->GetSettings(weapon);
 
-		Vector desiredCamOffset = Vector(cos(DEG2RAD(view->yaw)) * dist, sin(DEG2RAD(view->yaw)) * dist, sin(DEG2RAD(-view->pitch)) * dist);
+	fov = setts.fov * fov_fix;
+	silent_fov = setts.silent_fov * fov_fix;
 
-		ray.Init(g_LocalPlayer->GetEyePos(), (g_LocalPlayer->GetEyePos() - desiredCamOffset));
-		CTraceFilter traceFilter;
-		traceFilter.pSkip = g_LocalPlayer;
-		g_EngineTrace->TraceRay(ray, MASK_SHOT, &traceFilter, &tr);
+	silent_enable = setts.silent;
 
-		Vector diff = g_LocalPlayer->GetEyePos() - tr.endpos;
-
-		float distance2D = sqrt(abs(diff.x * diff.x) + abs(diff.y * diff.y)); 
-
-		bool horOK = distance2D > (dist - 2.0f);
-		bool vertOK = (abs(diff.z) - abs(desiredCamOffset.z) < 3.0f);
-
-		float cameraDistance;
-
-		if (horOK && vertOK)        
-			cameraDistance = dist;          
-		else
-		{
-			if (vertOK)       
-				cameraDistance = distance2D * 0.95f;
-			else            
-				cameraDistance = abs(diff.z) * 0.95f;
-		}
-		g_Input->m_fCameraInThirdPerson = true;
-		g_Input->m_vecCameraOffset.z = cameraDistance;
-	}
-	else
-		g_Input->m_fCameraInThirdPerson = false;
+	Render::Get().RenderCircle(g_Configurations.g_Globals.SWidthHalf, g_Configurations.g_Globals.SHeightHalf, fov, 50, g_Configurations.default_aim_fov, 0.1f);
+	if (silent_enable)
+		Render::Get().RenderCircle(g_Configurations.g_Globals.SWidthHalf, g_Configurations.g_Globals.SHeightHalf, silent_fov, 50, g_Configurations.silent_aim_fov, 0.1f);
 }
+
+
+
 
 void Visuals::AddToDrawList() 
 {
@@ -402,6 +588,8 @@ void Visuals::AddToDrawList()
 					player.RenderHealth();
 				if (g_Configurations.esp_player_armour)    
 					player.RenderArmour();
+				if (g_Configurations.head_dot)
+					player.DrawHeadDot();
 			}
 		}
 		else if (g_Configurations.esp_dropped_weapons && entity->IsWeapon())
@@ -414,6 +602,19 @@ void Visuals::AddToDrawList()
 			RenderItemEsp(entity);
 	}
 
-	
+	//	DrawSounds();
 		damage_indicators.paint();
+		Visuals::Get().ShowFov();
+}
+
+void Visuals::MenuVisuals() {
+
+	ImGui::Checkbox("Third Person", &g_Configurations.misc_thirdperson);
+	ImGui::Keybind("##HotKey2", &thirdperson_key);
+	ImGui::SliderFloat("Distance", g_Configurations.misc_thirdperson_dist, 0.f, 150.f);
+}
+
+void Visuals::SetupValues() {
+	g_Config->PushItem(&g_Configurations.g_Globals.InThirdPerson, "visuals", "third_person", g_Configurations.g_Globals.InThirdPerson);
+	g_Config->PushItem(&thirdperson_key, "visuals", "3p_key", thirdperson_key);
 }

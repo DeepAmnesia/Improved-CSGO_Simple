@@ -47,7 +47,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(Configuration)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include</IncludePath>
+    <IncludePath>C:\Users\XE\Desktop\Improved-CSGO_Simple-main\csgo_sdk\minhook;C:\Users\XE\Desktop\Improved-CSGO_Simple-main\csgo_sdk;C:\Users\XE\Desktop\Improved-CSGO_Simple-main\csgo_sdk\helpers;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <TargetName>cheat</TargetName>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(DXSDK_DIR)Lib\x86</LibraryPath>
   </PropertyGroup>
@@ -97,21 +97,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="functions\aimbot.cpp" />
+    <ClCompile Include="functions\autowall.cpp" />
+    <ClCompile Include="functions\backtrack.cpp" />
     <ClCompile Include="functions\bhop.cpp" />
     <ClCompile Include="functions\bullet_tracers.cpp" />
     <ClCompile Include="functions\chams.cpp" />
+    <ClCompile Include="config.cpp" />
     <ClCompile Include="functions\damage_indicator.cpp" />
     <ClCompile Include="functions\events.cpp" />
     <ClCompile Include="functions\glow.cpp" />
     <ClCompile Include="functions\grenade_pred.cpp" />
     <ClCompile Include="functions\misc.cpp" />
+    <ClCompile Include="functions\nightmode.cpp" />
+    <ClCompile Include="functions\ragebot.cpp" />
+    <ClCompile Include="functions\SpecList.cpp" />
     <ClCompile Include="functions\visuals.cpp" />
+    <ClCompile Include="functions\weapon_groups.cpp" />
+    <ClCompile Include="helpers\keybinds.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="imgui\imgui_impl_dx9.cpp" />
     <ClCompile Include="imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
-    <ClCompile Include="sdk\KeyValues.cpp" />
+    <ClCompile Include="minhook\buffer.c" />
+    <ClCompile Include="minhook\hde\hde32.c" />
+    <ClCompile Include="minhook\hde\hde64.c" />
+    <ClCompile Include="minhook\hook.c" />
+    <ClCompile Include="minhook\trampoline.c" />
+    <ClCompile Include="sdk\misc\KeyValues.cpp" />
     <ClCompile Include="sdk\utils\input.cpp" />
     <ClCompile Include="sdk\utils\math.cpp" />
     <ClCompile Include="sdk\utils\utils.cpp" />
@@ -139,12 +153,54 @@
     <ClInclude Include="config.hpp" />
     <ClInclude Include="fonts\cousine.hpp" />
     <ClInclude Include="fonts\fonts.hpp" />
+    <ClInclude Include="functions\aimbot.hpp" />
+    <ClInclude Include="functions\autowall.hpp" />
+    <ClInclude Include="functions\backtrack.hpp" />
     <ClInclude Include="functions\bullet_tracers.h" />
     <ClInclude Include="functions\damage_indicator.h" />
     <ClInclude Include="functions\events.hpp" />
     <ClInclude Include="functions\grenade_pred.hpp" />
     <ClInclude Include="functions\misc.hpp" />
+    <ClInclude Include="functions\nightmode.h" />
     <ClInclude Include="functions\prediction.hpp" />
+    <ClInclude Include="functions\ragebot.hpp" />
+    <ClInclude Include="functions\SpecList.hpp" />
+    <ClInclude Include="functions\weapon_groups.hpp" />
+    <ClInclude Include="helpers\keybinds.hpp" />
+    <ClInclude Include="helpers\nlohmann\adl_serializer.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\conversions\from_json.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\conversions\to_chars.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\conversions\to_json.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\exceptions.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\input\binary_reader.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\input\input_adapters.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\input\json_sax.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\input\lexer.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\input\parser.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\input\position_t.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\iterators\internal_iterator.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\iterators\iteration_proxy.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\iterators\iterator_traits.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\iterators\iter_impl.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\iterators\json_reverse_iterator.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\iterators\primitive_iterator.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\json_pointer.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\json_ref.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\macro_scope.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\macro_unscope.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\meta\cpp_future.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\meta\detected.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\meta\is_sax.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\meta\type_traits.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\meta\void_t.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\output\binary_writer.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\output\output_adapters.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\output\serializer.hpp" />
+    <ClInclude Include="helpers\nlohmann\detail\value_t.hpp" />
+    <ClInclude Include="helpers\nlohmann\json.hpp" />
+    <ClInclude Include="helpers\nlohmann\json_fwd.hpp" />
+    <ClInclude Include="helpers\nlohmann\thirdparty\hedley\hedley.hpp" />
+    <ClInclude Include="helpers\nlohmann\thirdparty\hedley\hedley_undef.hpp" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_dx9.h" />
@@ -155,13 +211,22 @@
     <ClInclude Include="imgui\imstb_rectpack.h" />
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
-    <ClInclude Include="sdk\KeyValues.h" />
+    <ClInclude Include="minhook\buffer.h" />
+    <ClInclude Include="minhook\hde\hde32.h" />
+    <ClInclude Include="minhook\hde\hde64.h" />
+    <ClInclude Include="minhook\hde\pstdint.h" />
+    <ClInclude Include="minhook\hde\table32.h" />
+    <ClInclude Include="minhook\hde\table64.h" />
+    <ClInclude Include="minhook\minhook.h" />
+    <ClInclude Include="minhook\trampoline.h" />
+    <ClInclude Include="sdk\interfaces\IVRenderBeams.h" />
     <ClInclude Include="sdk\misc\datamap.hpp" />
     <ClInclude Include="fonts\droid.hpp" />
     <ClInclude Include="functions\bhop.hpp" />
     <ClInclude Include="functions\chams.hpp" />
     <ClInclude Include="functions\glow.hpp" />
     <ClInclude Include="functions\visuals.hpp" />
+    <ClInclude Include="sdk\misc\KeyValues.hpp" />
     <ClInclude Include="sdk\utils\input.hpp" />
     <ClInclude Include="sdk\utils\math.hpp" />
     <ClInclude Include="sdk\utils\utils.hpp" />
@@ -234,7 +299,6 @@
     <ClInclude Include="sdk\misc\UtlVector.hpp" />
     <ClInclude Include="sdk\misc\vfunc.hpp" />
     <ClInclude Include="sdk\netvars.hpp" />
-    <ClInclude Include="sdk\ViewRenderBeams.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
